@@ -329,36 +329,44 @@ const UploadData = () => {
                                 <div
                                     {...getRootProps()}
                                     className={`
-                                            border-2 border-dashed rounded-lg p-8
-                                            transition-colors duration-200 ease-in-out
-                                            ${isDragActive ? 'border-primary bg-primary/5' : 'border-border'}
-                                            ${file ? 'bg-primary/5' : 'hover:bg-accent'}
-                                            ${errors.file ? 'border-red-500' : ''}
-                                        `}
+                                        relative cursor-pointer
+                                        border-2 border-dashed rounded-lg p-8
+                                        transition-colors duration-200 ease-in-out
+                                        ${isDragActive ? 'border-primary bg-primary/5' : 'border-border'}
+                                        ${file ? 'bg-primary/5' : 'hover:bg-accent'}
+                                        ${errors.file ? 'border-red-500' : ''}
+                                        touch:hover:bg-transparent
+                                        touch:active:bg-accent/50
+                                        touch:transition-none
+                                    `}
+                                    role="button"
+                                    tabIndex="0"
+                                    aria-label="Upload file"
                                 >
-                                    <input {...getInputProps()} />
+                                    <input {...getInputProps()} accept=".csv,.xlsx,.xls,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
                                     <div className="text-center">
                                         <Icon
                                             icon={file ? "mdi:file-check" : "mdi:upload"}
                                             className={`w-12 h-12 mx-auto mb-4 
-                                                    ${file ? 'text-primary' : 'text-muted-foreground'}
-                                                    ${errors.file ? 'text-red-500' : ''}
-                                                `}
+                                                ${file ? 'text-primary' : 'text-muted-foreground'}
+                                                ${errors.file ? 'text-red-500' : ''}
+                                            `}
                                         />
                                         {file ? (
                                             <div>
                                                 <p className="text-sm font-medium">{file.name}</p>
                                                 <p className="text-xs text-muted-foreground mt-1">
-                                                    Click or drag to replace
+                                                    Tap to replace
                                                 </p>
                                             </div>
                                         ) : (
                                             <div>
                                                 <p className="text-sm font-medium">
-                                                    Drop your file here or click to browse
+                                                    <span className="hover-device:inline touch:hidden">Drop your file here, or </span>
+                                                    click to upload
                                                 </p>
                                                 <p className="text-xs text-muted-foreground mt-1">
-                                                    Supports PDF, CSV, XLS, XLSX
+                                                    Accepts CSV and Excel files
                                                 </p>
                                             </div>
                                         )}

@@ -392,6 +392,9 @@ const AccountSetting = () => {
                                 <div className="flex items-center space-x-4">
                                     <Avatar className="h-20 w-20">
                                         <AvatarImage
+                                            loading="lazy"
+                                            decoding="async"
+                                            fetchPriority="high"
                                             src={profileData.avatarUrl || "/api/placeholder/80/80"}
                                             alt="Profile"
                                             onError={(e) => {

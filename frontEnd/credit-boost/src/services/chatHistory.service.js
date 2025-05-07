@@ -1,5 +1,5 @@
 // chatHistory.service.js
-import { apiConfig, getApiUrl } from "@/config/api.config";
+import apiConfig from "@/config/api.config";
 
 export const chatHistoryService = {
   // Save chat history

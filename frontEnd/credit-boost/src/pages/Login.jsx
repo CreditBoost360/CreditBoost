@@ -3,49 +3,63 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { authenticateWithGoogle } from '../api/socialAuth';
 import AuthLayout from './Layouts/AuthLayout';
-import { authService } from '@/services/auth.service';
+import { unifiedAuthService } from '@/services/unifiedAuth.service';
+import { useToast } from '@/components/ui/use-toast';
 
 const LoginPage = () => {
+    const { toast } = useToast();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [authProvider, setAuthProvider] = useState('jwt'); // Default to JWT
     
-    const { setIsAuthenticated } = useContext(AppContext);
+    const { setIsAuthenticated, setUser } = useContext(AppContext);
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (authService.isAuthenticated()) {
-            navigate('/dashboard', { replace: true });
-        }
-        setIsLoading(false);
+        const checkAuth = async () => {
+            const isAuth = await unifiedAuthService.isAuthenticated();
+            if (isAuth) {
+                navigate('/dashboard', { replace: true });
+            }
+            setIsLoading(false);
+        };
+        
+        checkAuth();
     }, [navigate]);
     
-
     const handleLogin = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         setError('');
         
         try {
-            const {user} = await authService.login(email, password);
-            setIsAuthenticated(true);
+            const response = await unifiedAuthService.login(email, password, authProvider);
+            console.log('Login response:', response);
             
+            setIsAuthenticated(true);
+            setUser(response.user);
+            
+            toast({ title: "Success", description: "Login successful" });
             navigate('/dashboard', { replace: true }); 
         } catch (err) {
-            console.log(err);
-            
+            console.error('Login error:', err);
             setError('Invalid email or password. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
     };
 
+    const toggleAuthProvider = () => {
+        setAuthProvider(prev => prev === 'jwt' ? 'supabase' : 'jwt');
+        toast({ description: `Switched to ${authProvider === 'jwt' ? 'Supabase' : 'JWT'} authentication` });
+    };
+
     if (isLoading) {
         return null;
     }
-
 
     return (
         <AuthLayout 
@@ -107,6 +121,16 @@ const LoginPage = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         className="block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-sky-500 focus:ring-sky-500 dark:bg-gray-800 dark:border-gray-700"
                     />
+                </div>
+
+                <div className="flex items-center">
+                    <button
+                        type="button"
+                        onClick={toggleAuthProvider}
+                        className="text-xs text-sky-600 hover:text-sky-500 ml-auto"
+                    >
+                        Using {authProvider === 'jwt' ? 'JWT' : 'Supabase'} auth
+                    </button>
                 </div>
 
                 <button

@@ -4,5 +4,63 @@
             "source": "/(.*)",
             "destination": "/"
         }
+    ],
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                },
+                {
+                    "key": "X-Frame-Options",
+                    "value": "DENY"
+                },
+                {
+                    "key": "X-XSS-Protection",
+                    "value": "1; mode=block"
+                },
+                {
+                    "key": "Strict-Transport-Security",
+                    "value": "max-age=31536000; includeSubDomains; preload"
+                },
+                {
+                    "key": "Content-Security-Policy",
+                    "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; connect-src 'self' https://credvault.co.ke https://api.credvault.co.ke; font-src 'self' data: https:; frame-ancestors 'none'; upgrade-insecure-requests"
+                },
+                {
+                    "key": "Permissions-Policy",
+                    "value": "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()"
+                },
+                {
+                    "key": "Referrer-Policy",
+                    "value": "strict-origin-when-cross-origin"
+                },
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "https://credvault.co.ke"
+                },
+                {
+                    "key": "Access-Control-Allow-Methods",
+                    "value": "GET,POST,PUT,DELETE,OPTIONS"
+                },
+                {
+                    "key": "Access-Control-Allow-Headers",
+                    "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
+                }
+            ]
+        }
+    ],
+    "env": {
+        "VITE_API_URL": "https://credvault.co.ke/api",
+        "VITE_PRODUCTION": "true"
+    },
+    "redirects": [
+        {
+            "source": "www.credvault.co.ke",
+            "destination": "https://credvault.co.ke",
+            "statusCode": 307
+        }
     ]
 }

@@ -1,4 +1,4 @@
-import { apiConfig, getApiUrl } from "@/config/api.config";
+import apiConfig from "@/config/api.config";
 
 export const transactionChat = {
   // Get credit data uploads for a source

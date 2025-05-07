@@ -1,6 +1,7 @@
-import { authService } from '@/services/auth.service';
 import React, { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { unifiedAuthService } from '@/services/unifiedAuth.service';
+import { toast } from '@/components/ui/use-toast';
 
 export const AppContext = createContext();
 
@@ -14,37 +15,29 @@ export const AppProvider = ({ children }) => {
             return null;
         }
     });
-    const [isAuthenticated, setIsAuthenticated] = useState(() => {
-        return !!authService.getToken();
-    });
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const initializeAuth = async () => {
             try {
-                const token = authService.getToken();
+                // Check if user is authenticated with either system
+                const isAuth = await unifiedAuthService.isAuthenticated();
                 
-                if (!token) {
+                if (!isAuth) {
                     setIsLoading(false);
                     return;
                 }
 
-                // First verify the token
-                const isValid = await authService.verifyToken();
-                
-                if (!isValid) {
-                    throw new Error('Invalid token');
-                }
-
-                // Then get fresh user data
-                const userData = await authService.getCurrentUser();
+                // Get current user data
+                const userData = await unifiedAuthService.getCurrentUser();
                 setUser(userData);
                 setIsAuthenticated(true);
                 
             } catch (error) {
                 console.error("Auth initialization failed:", error);
                 // Clean up on auth errors
-                authService.logout();
+                await unifiedAuthService.logout();
                 setUser(null);
                 setIsAuthenticated(false);
                 navigate('/login');
@@ -57,11 +50,17 @@ export const AppProvider = ({ children }) => {
     }, [navigate]);
 
     // Logout helper
-    const logout = () => {
-        authService.logout();
-        setIsAuthenticated(false);
-        setUser(null);
-        navigate('/login');
+    const logout = async () => {
+        try {
+            await unifiedAuthService.logout();
+            setIsAuthenticated(false);
+            setUser(null);
+            toast({ title: "Success", description: "Logged out successfully" });
+            navigate('/login');
+        } catch (error) {
+            console.error('Logout error:', error);
+            toast({ title: "Error", description: "Logout failed", variant: "destructive" });
+        }
     };
 
     // Update user helper
@@ -69,11 +68,11 @@ export const AppProvider = ({ children }) => {
         try {
             if (!Object.keys(newData).length) return;
 
-            const updatedUser = await authService.updateUserData(newData);
+            const updatedUser = await unifiedAuthService.updateUserData(newData);
             setUser(updatedUser);
             return updatedUser;
         } catch (error) {
-            if (error.message.includes('token')) {
+            if (error.message.includes('token') || error.message.includes('auth')) {
                 logout();
             }
             throw error;

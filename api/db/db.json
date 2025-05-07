@@ -31,6 +31,15 @@
       "createdAt": "2024-12-02T07:42:58.787Z",
       "updatedAt": "2024-12-02T07:46:21.839Z",
       "photoUrl": "/uploads/profiles/profile-1733125581834-252832169.jpg"
+    },
+    {
+      "id": "1746434410354",
+      "firstName": "sam",
+      "lastName": "m",
+      "email": "mrsamuelmbugua908@gmail.com",
+      "phone": "0792156908",
+      "password": "$2b$10$VyBXlgA2Bm9ZNIDfhUxT.ehL/kXIe6tBex2RQijDGBTBYeQtRY4ZK",
+      "createdAt": "2025-05-05T08:40:10.354Z"
     }
   ],
   "communities": [],
@@ -581,6 +590,22 @@
         "q1_1": "b",
         "q1_2": "a"
       }
+    },
+    {
+      "userId": "1746434410354",
+      "quizId": "q2",
+      "attemptNumber": 1,
+      "startedAt": "2025-05-05T08:54:11.242Z"
+    },
+    {
+      "userId": "1746434410354",
+      "quizId": "q2",
+      "score": 0,
+      "completedAt": "2025-05-05T08:58:09.956Z",
+      "answers": {
+        "q2_1": "a",
+        "q2_2": "b"
+      }
     }
   ],
   "creditData": [
@@ -912,6 +937,18 @@
         "desktopNotifications": true,
         "soundNotifications": false
       }
+    },
+    {
+      "userId": "1746434410354",
+      "notifications": {
+        "emailUpdates": true,
+        "creditScoreChanges": true,
+        "newLearningContent": false,
+        "desktopNotifications": true,
+        "soundNotifications": false
+      },
+      "createdAt": "2025-05-05T08:40:10.354Z",
+      "updatedAt": "2025-05-05T08:40:10.354Z"
     }
   ]
 }

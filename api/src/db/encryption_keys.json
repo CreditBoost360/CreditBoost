@@ -1,0 +1,12 @@
+{
+  "keys": [
+    {
+      "id": "key-1",
+      "key": "5f2b5f2b5f2b5f2b5f2b5f2b5f2b5f2b5f2b5f2b5f2b5f2b5f2b5f2b5f2b",
+      "createdAt": "2025-05-06T15:30:00.000Z",
+      "active": true
+    }
+  ],
+  "currentKeyId": "key-1",
+  "lastRotation": "2025-05-06T15:30:00.000Z"
+}

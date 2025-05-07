@@ -48,7 +48,7 @@ export default function Feedback() {
           {testimonials.map((testimonial, idx) => (
             <div
               key={idx}
-              className={`relative p-6 rounded-2xl transition-all duration-300 ${
+              className={`relative p-6 rounded-2xl transition-all duration-300 interactive-element touch-feedback ${
                 idx === activeIndex
                   ? 'bg-white dark:bg-gray-800 shadow-xl scale-105'
                   : 'bg-white/50 dark:bg-gray-800/50 shadow hover:shadow-xl cursor-pointer'
@@ -59,6 +59,8 @@ export default function Feedback() {
                 <img
                   src={testimonial.avatar}
                   alt={testimonial.name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <div>

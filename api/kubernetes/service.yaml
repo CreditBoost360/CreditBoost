@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: creditboost-api
+  labels:
+    app: creditboost-api
+spec:
+  selector:
+    app: creditboost-api
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  type: ClusterIP

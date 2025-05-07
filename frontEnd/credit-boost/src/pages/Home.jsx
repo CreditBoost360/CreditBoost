@@ -1,10 +1,22 @@
-import React from 'react';
-import { CreditCard, GraduationCap, Star, ChevronRight, Sparkles, Trophy, Target } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CreditCard, GraduationCap, Star, ChevronRight, Sparkles, Trophy, Target, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AuthenticatedLayout from './Layouts/AuthenticatedLayout';
+import PassportCard from '@/components/CreditPassport/PassportCard';
 
 const Home = () => {
   const navigate = useNavigate();
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    // Mock user data - in a real app, this would come from your auth context or API
+    setUserData({
+      firstName: "John",
+      lastName: "Doe",
+      email: "john.doe@example.com",
+      updatedAt: new Date().toISOString()
+    });
+  }, []);
 
   const stats = [
     {
@@ -50,6 +62,15 @@ const Home = () => {
       buttonText: 'Analyze Score'
     },
     {
+      name: 'Universal Credit Passport',
+      icon: <Shield className="h-6 w-6" />,
+      link: '/credit-passport',
+      description: 'Secure blockchain-based credit identity system.',
+      features: ['Blockchain security', 'Global accessibility', 'User-controlled sharing'],
+      gradient: "from-blue-500 to-blue-400",
+      buttonText: 'Access Passport'
+    },
+    {
       name: 'Financial Growth Journey',
       icon: <Sparkles className="h-6 w-6" />,
       link: '/learn',
@@ -87,10 +108,21 @@ const Home = () => {
           ))}
         </div>
 
+        {/* Credit Passport Card */}
+        <div className="mb-6">
+          <h2 className="text-brand-credit font-brand mb-4">Your Credit Passport</h2>
+          <PassportCard 
+            userData={userData}
+            creditScore={780}
+            onView={() => navigate('/credit-passport')}
+            onShare={() => navigate('/credit-passport')}
+          />
+        </div>
+
         {/* Resources Section */}
         <div>
           <h2 className="text-brand-credit font-brand mb-6">Your Next Steps</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {tasks.map((task, index) => (
               <div
                 key={index}

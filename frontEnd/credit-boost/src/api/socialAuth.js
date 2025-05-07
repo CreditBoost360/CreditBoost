@@ -1,70 +1,77 @@
 import axiosInstance from "./axiosInstance";
 import api from "./privateInstance";
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { toast } from '@/components/ui/use-toast';
+import { unifiedAuthService } from '@/services/unifiedAuth.service';
 
 const baseURL = import.meta.env.VITE_PRODUCTION === 'true'
-  ? import.meta.env.VITE_PROD_URL
-  : import.meta.env.VITE_DEV_URL;
+  ? 'https://credvault.co.ke/api'
+  : import.meta.env.VITE_DEV_URL || 'http://localhost:3000/api';
 
 const redirectURL = import.meta.env.VITE_PRODUCTION === 'true'
-  ? import.meta.env.VITE_PROD_REDIRECT_URL
-  : import.meta.env.VITE_DEV_REDIRECT_URL;
-
+  ? 'https://credvault.co.ke/auth/google'
+  : 'http://localhost:5173/auth/google';
 
 export const verifyUserSession = async () => {
-  const response = await api.post('jwt/verify/');
+  const response = await api.post('auth/verify');
   return response.data;
 };
 
-
-
-
 export const socialAxiosInstance = axios.create({
-  baseURL: baseURL, // Use the baseURL determined by the environment
+  baseURL,
   withCredentials: true,
   headers: {
-    Accept: 'application/json',
-    'Content-Type': 'application/x-www-form-urlencoded',
+    'Accept': 'application/json',
+    'Content-Type': 'application/x-www-form-urlencoded'
   },
 });
 
-
+// Enhanced Google authentication that tries Supabase first, then falls back to custom OAuth
 export const authenticateWithGoogle = async () => {
   try {
-    const url = `${baseURL}/o/google-oauth2/?redirect_uri=${redirectURL}`;
-    const res = await axiosInstance.get(url, {
-      // headers: {
-      //   Accept: 'application/json',
-      // },
-      // withCredentials: true,
-    });
-
-    // data = await res.json();
+    // Try Supabase authentication first
+    try {
+      await unifiedAuthService.authenticateWithGoogle();
+      return; // If successful, we're done
+    } catch (supabaseError) {
+      console.log('Supabase Google auth failed, falling back to custom OAuth', supabaseError);
+      // Fall back to custom OAuth implementation
+    }
+    
+    // Legacy custom OAuth implementation
+    const url = `${baseURL}/o/google-oauth2/?redirect_uri=${encodeURIComponent(redirectURL)}`;
+    const res = await axiosInstance.get(url);
 
     if (res.status === 200 && typeof window !== 'undefined') {
-      //window.location.replace(res.data.authorization_url);
-
       console.log('Full response:', res);
-      console.log('auth url',res.data.authorization_url)
-      setTimeout(() => {
-        window.location.replace(res.data.authorization_url);
-      }, 20000);
-
-      //https://accounts.google.com/o/oauth2/auth?client_id=744704943921-ebcbuhh1u87re2mlmuc6jk2rv0pgip5e.apps.googleusercontent.com&redirect_uri=http://localhost:5173/auth/google&state=1B117UrBjgiBhvJeCmQhHNU5H8vD7fCp&response_type=code&scope=https://www.googleapis.com/auth/userinfo.email+https://www.googleapis.com/auth/userinfo.profile+openid+openid+email+profile
-      
-      
+      console.log('auth url:', res.data.authorization_url);
+      window.location.replace(res.data.authorization_url);
     } else {
-      toast.error('Something went wrong');
+      toast({ title: "Error", description: "Authentication failed", variant: "destructive" });
     }
   } catch (err) {
-    console.log(err)
-    toast.error('Something went wrong');
+    console.error(err);
+    toast({ title: "Error", description: "Authentication failed", variant: "destructive" });
   }
 };
 
-
-
-
-
-
+// Handle OAuth callback
+export const handleOAuthCallback = async (state, code) => {
+  try {
+    // Try Supabase callback handling first
+    const supabaseResult = await unifiedAuthService.handleOAuthCallback();
+    if (supabaseResult.success) {
+      return supabaseResult;
+    }
+    
+    // Fall back to custom OAuth handling
+    const response = await socialAxiosInstance.post(
+      `${baseURL}/o/google-oauth2/?state=${encodeURIComponent(state)}&code=${encodeURIComponent(code)}`
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('OAuth callback error:', error);
+    return { success: false, error };
+  }
+};

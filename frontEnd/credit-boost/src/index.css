@@ -2,8 +2,216 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Animation keyframes */
+@keyframes dash {
+  from {
+    stroke-dashoffset: 840;
+  }
+  to {
+    stroke-dashoffset: 180;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Loading skeleton animation */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.06) 25%,
+    rgba(0, 0, 0, 0.08) 37%,
+    rgba(0, 0, 0, 0.06) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.06) 25%,
+    rgba(255, 255, 255, 0.08) 37%,
+    rgba(255, 255, 255, 0.06) 63%
+  );
+  background-size: 200% 100%;
+}
+
+/* Color scheme transitions */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+  }
+}
+
+/* Smooth theme transitions */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Remove transitions if user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
 @layer base {
   body {
     @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
   }
+  
+  /* Mobile Input Optimizations */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="search"],
+  textarea,
+  select {
+    @apply w-full rounded-lg border px-3 py-2;
+    font-size: 16px; /* Prevents iOS zoom */
+    -webkit-appearance: none;
+    appearance: none;
+    
+    &:focus {
+      @apply outline-none ring-2 ring-primary ring-offset-2;
+    }
+  }
+
+  /* Fix for iOS input shadows */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"] {
+    -webkit-appearance: none;
+  }
+  
+  /* Improve touch targets on mobile */
+  @media (max-width: 768px) {
+    button, 
+    a, 
+    input, 
+    select, 
+    textarea {
+      @apply min-h-[44px] min-w-[44px];
+    }
+    
+    /* Add spacing between touch targets */
+    button:not(:last-child), 
+    a:not(:last-child) {
+      @apply mb-2;
+    }
+  }
+  
+  /* Remove touch delay on supported devices */
+  a, 
+  button {
+    touch-action: manipulation;
+  }
+
+  /* Momentum scrolling for iOS */
+  .momentum-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: scroll;
+  }
+
+  /* Better touch targets */
+  .interactive-element {
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Prevent text selection while swiping */
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Touch feedback */
+  .touch-feedback {
+    transition: transform 0.2s ease;
+    
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  /* Scrolling optimizations */
+  .scroll-view {
+    contain: content;
+    will-change: transform;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    scroll-behavior: smooth;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    
+    @supports (content-visibility: auto) {
+      content-visibility: auto;
+      contain-intrinsic-size: 0 500px;
+    }
+  }
+
+  /* Virtual list optimization */
+  .virtual-list-item {
+    contain: layout style;
+    will-change: transform;
+    transform: translateZ(0);
+  }
+
+  /* Hardware acceleration for animations */
+  .hardware-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+}
+
+/* Remove focus outlines for mouse users, keep for keyboard */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Keep focus styles for keyboard users */
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-primary;
 }

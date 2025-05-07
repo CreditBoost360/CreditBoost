@@ -32,18 +32,38 @@ const AuthLayout = ({ children, title, subtitle }) => {
 
                 {/* Right side - Credit Score Illustration */}
                 <div className="hidden lg:flex w-1/2 bg-primary/5 items-center justify-center p-6">
-                    <div className="max-w-lg">
-                        <svg viewBox="0 0 400 400" className="w-full h-full">
-                            <circle cx="200" cy="200" r="160" fill="none" stroke="currentColor" className="text-primary" strokeWidth="20" strokeDasharray="840" strokeDashoffset="180" />
-                            <text x="200" y="180" textAnchor="middle" className="text-6xl font-bold fill-primary">750</text>
-                            <text x="200" y="220" textAnchor="middle" className="text-xl fill-muted-foreground">Excellent</text>
-                            <path d="M200,40 A160,160 0 0 1 360,200" fill="none" stroke="currentColor" className="text-primary-light" strokeWidth="20" />
-                            <path d="M40,200 A160,160 0 0 1 200,40" fill="none" stroke="currentColor" className="text-secondary" strokeWidth="20" />
+                    <div className="max-w-lg flex flex-col items-center">
+                        <svg viewBox="0 0 400 400" className="w-full h-full transform transition-transform hover:scale-105 duration-300 motion-reduce:transition-none">
+                            <circle 
+                                cx="200" 
+                                cy="200" 
+                                r="160" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                className="text-primary motion-safe:animate-[dash_2s_ease-in-out]" 
+                                strokeWidth="20" 
+                                strokeDasharray="840" 
+                                strokeDashoffset="180"
+                                style={{
+                                    '@media(prefersReducedMotion: reduce)': {
+                                        animation: 'none',
+                                        strokeDashoffset: '0'
+                                    }
+                                }}
+                            />
+                            <text 
+                                x="200" 
+                                y="180" 
+                                textAnchor="middle" 
+                                className="text-6xl font-bold fill-primary motion-safe:animate-[fadeIn_1s_ease-in]"
+                            >
+                                750
+                            </text>
                         </svg>
-                        <div className="mt-8 text-center">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Build Your Credit Score</h2>
-                            <p className="text-muted-foreground">Track, improve, and maintain your credit score with our expert tools and guidance.</p>
-                        </div>
+                        <h3 className="text-2xl font-bold text-gray-800 mt-6 text-center">Build Your Credit Score</h3>
+                        <p className="text-gray-600 mt-2 text-center">
+                            Track, improve, and maintain your credit score with our expert tools and guidance.
+                        </p>
                     </div>
                 </div>
             </div>

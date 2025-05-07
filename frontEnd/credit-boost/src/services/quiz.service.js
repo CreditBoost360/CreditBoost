@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-catch */
 
-import { apiConfig, getApiUrl } from "@/config/api.config";
+import apiConfig from "@/config/api.config";
 
 export const quizService = {
   getQuizzes: async () => {

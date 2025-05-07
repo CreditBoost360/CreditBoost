@@ -23,27 +23,69 @@ const SignUp = () => {
 
     const handleSignUp = async (e) => {
         e.preventDefault();
+        setError('');
+        
+        // Validation
+        if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+            setError('Please fill in all required fields');
+            return;
+        }
+
         if (formData.password !== formData.password2) {
             setError('Passwords do not match');
             return;
         }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
+        // Password validation - at least 8 chars, one letter, one number, one special char
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+        if (!passwordRegex.test(formData.password)) {
+            setError('Password must be at least 8 characters long and contain at least one letter, one number, and one special character');
+            return;
+        }
+
         setIsSubmitting(true);
-        setError('');
-        try {            
-            await authService.register({
+        
+        try {
+            console.log("Starting registration process");
+            
+            const result = await authService.register({
                 firstName: formData.firstName,
                 lastName: formData.lastName,
                 email: formData.email,
-                phone: formData.phone,
-                password: formData.password
+                password: formData.password,
+                phone: formData.phone || null
             });
+            
+            console.log("Registration successful:", result);
             setShowSuccess(true);
+            // Clear form
+            setFormData({
+                firstName: '',
+                lastName: '', 
+                email: '',
+                phone: '',
+                password: '',
+                password2: ''
+            });
             // Delay navigation to show success message
             setTimeout(() => {
                 navigate('/login');
             }, 2000);
-        } catch (err) {            
-            setError('Registration failed. Please try again.');
+        } catch (err) {
+            console.error("Registration error:", err);
+            // Handle specific error cases
+            if (err.message.includes('Email already registered')) {
+                setError('This email is already registered. Please try logging in instead.');
+            } else {
+                setError(err.message || 'Registration failed. Please try again.');
+            }
         } finally {
             setIsSubmitting(false);
         }

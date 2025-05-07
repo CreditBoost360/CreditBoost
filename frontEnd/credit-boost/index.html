@@ -2,11 +2,36 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- <link rel="icon" href="/logo.ico" /> -->
     <link rel="icon" href="/public/logo-no-bg.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#02A669" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#02A669" media="(prefers-color-scheme: dark)" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CreditBoost" />
+    <link rel="apple-touch-icon" href="/public/logo-no-bg.png" />
+    <meta name="description" content="CreditBoost - Comprehensive credit score management and financial education platform" />
+    
+    <!-- Load fonts directly -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    
+    <!-- Fallback for no-JS -->
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    </noscript>
+    
     <title>CreditBoost</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+    <script>
+      // WebP support detection
+      (function() {
+        var webP = new Image();
+        webP.onload = webP.onerror = function() {
+          document.documentElement.classList.add(webP.height === 2 ? 'webp' : 'no-webp');
+        };
+        webP.src = 'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

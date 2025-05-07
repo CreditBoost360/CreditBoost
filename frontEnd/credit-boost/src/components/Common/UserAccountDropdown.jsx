@@ -34,7 +34,7 @@ const UserAccountDropdown = () => {
       <DropdownMenuTrigger asChild>
         <button className="flex items-center space-x-2 hover:bg-accent rounded-full p-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/api/placeholder/32/32" alt="User" />
+            <AvatarImage loading="lazy" fetchPriority="high" src="/api/placeholder/32/32" alt="User" />
             <AvatarFallback>US</AvatarFallback>
           </Avatar>
         </button>
@@ -42,7 +42,7 @@ const UserAccountDropdown = () => {
       <DropdownMenuContent align="end" className="w-56">
         <div className="flex items-center p-2 space-x-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/api/placeholder/32/32" alt="User" />
+            <AvatarImage loading="lazy" fetchPriority="high" src="/api/placeholder/32/32" alt="User" />
             <AvatarFallback>US</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">

@@ -1,26 +1,47 @@
 /* eslint-disable no-useless-catch */
-import { apiConfig, getApiUrl } from "@/config/api.config";
+import apiConfig from "@/config/api.config";
+import api from "@/api/privateInstance";
 
 const TOKEN_KEY = "auth_token";
 const USER_KEY = "user_data";
+const TOKEN_EXPIRY = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
+const REFRESH_BUFFER = 5 * 60 * 1000; // 5 minutes before expiry
 
 export const authService = {
   login: async (email, password) => {
     try {
-      const response = await fetch(getApiUrl("/auth/login"), {
-        method: "POST",
-        headers: apiConfig.getHeaders(false),
-        body: JSON.stringify({ email, password }),
+      console.log("Attempting login with:", { email, password: "***" });
+      
+      // Implement device fingerprinting for enhanced security
+      const deviceFingerprint = await generateDeviceFingerprint();
+      
+      const response = await api.post("/api/auth/login", { 
+        email, 
+        password,
+        deviceFingerprint
       });
 
-      if (!response.ok) throw new Error("Invalid credentials");
-      const data = await response.json();
-
-      // Store both token and user data
-      localStorage.setItem(TOKEN_KEY, data.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-      return data;
+      if (!response.data?.token) {
+        throw new Error("Invalid response from server");
+      }
+      
+      // Store auth data with expiry
+      const expiryTime = Date.now() + TOKEN_EXPIRY;
+      const authData = {
+        token: response.data.token,
+        expiry: expiryTime,
+        deviceFingerprint
+      };
+      
+      localStorage.setItem(TOKEN_KEY, JSON.stringify(authData));
+      localStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
+      
+      // Schedule token refresh
+      scheduleTokenRefresh(expiryTime);
+      
+      return response.data;
     } catch (error) {
+      console.error("Login error:", error);
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
       throw error;
@@ -29,78 +50,39 @@ export const authService = {
 
   register: async (userData) => {
     try {
-      if (
-        !userData.firstName ||
-        !userData.lastName ||
-        !userData.email ||
-        !userData.password
-      ) {
-        throw new Error("Required fields missing");
-      }
-
-      const registerData = {
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        email: userData.email,
-        password: userData.password,
-        phone: userData.phone || null,
-      };
-
-      const response = await fetch(getApiUrl("/auth/register"), {
-        method: "POST",
-        headers: apiConfig.getHeaders(false),
-        body: JSON.stringify(registerData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Registration failed");
-      }
-
-      const data = await response.json();
-      // Don't store anything after registration - user should log in
-      return data;
+      console.log("Starting registration process");
+      const response = await api.post("/api/auth/register", userData);
+      return response.data;
     } catch (error) {
+      console.error("Registration error:", error);
       throw error;
     }
   },
 
   getCurrentUser: async () => {
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
+      const token = authService.getToken();
       if (!token) {
         throw new Error("No auth token");
       }
 
-      // Try to get cached user data first
+      // Verify token expiry
+      const authData = JSON.parse(localStorage.getItem(TOKEN_KEY));
+      if (Date.now() >= authData.expiry - REFRESH_BUFFER) {
+        await authService.refreshToken();
+      }
+
       const cachedUser = localStorage.getItem(USER_KEY);
       if (cachedUser) {
         return JSON.parse(cachedUser);
       }
 
-      const response = await fetch(getApiUrl("/auth/me"), {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Server error");
-      }
-
-      const data = await response.json();
-      localStorage.setItem(USER_KEY, JSON.stringify(data));
-      return data;
+      const response = await api.get("/api/auth/me");
+      localStorage.setItem(USER_KEY, JSON.stringify(response.data));
+      return response.data;
     } catch (error) {
       console.error("Get current user error:", error);
-      // Only clear storage if it's an auth error
-      if (
-        error.message === "No auth token" ||
-        error.message === "Invalid token"
-      ) {
+      if (error.message.includes("token")) {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
       }
@@ -114,76 +96,34 @@ export const authService = {
         throw new Error("No data to update");
       }
 
-      const response = await fetch(getApiUrl("/auth/update"), {
-        method: "PUT",
-        headers: apiConfig.getHeaders(true),
-        body: JSON.stringify(userData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error || data.message || "Failed to update user data"
-        );
-      }
-
-      localStorage.setItem(USER_KEY, JSON.stringify(data));
-      return data;
+      const response = await api.put("/api/auth/update", userData);
+      localStorage.setItem(USER_KEY, JSON.stringify(response.data));
+      return response.data;
     } catch (error) {
       console.error("Update user data error:", error);
       throw error;
     }
   },
 
-  verifyToken: async () => {
+  refreshToken: async () => {
     try {
-        const token = localStorage.getItem(TOKEN_KEY);
-        if (!token) {
-            throw new Error('No auth token');
-        }
-
-        const response = await fetch(getApiUrl("/auth/verify"), {
-            method: "POST",
-            headers: {
-                ...apiConfig.getHeaders(false),
-                'Authorization': `Bearer ${token}`
-            }
-        }).catch(error => {
-            console.error('Network error:', error);
-            // Return a fake response for offline/connection issues
-            return new Response(JSON.stringify({ valid: true }), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        });
-
-        const data = await response.json();
-        return data.valid;
+      const response = await api.post("/api/auth/refresh");
+      const { token } = response.data;
+      
+      // Update stored token with new expiry
+      const expiryTime = Date.now() + TOKEN_EXPIRY;
+      const authData = {
+        token,
+        expiry: expiryTime,
+        deviceFingerprint: JSON.parse(localStorage.getItem(TOKEN_KEY))?.deviceFingerprint
+      };
+      
+      localStorage.setItem(TOKEN_KEY, JSON.stringify(authData));
+      scheduleTokenRefresh(expiryTime);
+      
+      return token;
     } catch (error) {
-        console.error('Token verification error:', error);
-        // Return true if we can't verify to prevent unnecessary logouts
-        return true;
-    }
-},
-
-  refreshToken: async (userId) => {
-    try {
-      const response = await fetch(getApiUrl("/auth/refresh"), {
-        method: "POST",
-        headers: apiConfig.getHeaders(true),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to refresh token");
-      }
-
-      const data = await response.json();
-
-      // Store new token
-      localStorage.setItem(TOKEN_KEY, data.token);
-      return data.token;
-    } catch (error) {
+      console.error("Token refresh error:", error);
       throw error;
     }
   },
@@ -191,13 +131,94 @@ export const authService = {
   logout: () => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    // Clear any scheduled token refresh
+    if (window.tokenRefreshTimeout) {
+      clearTimeout(window.tokenRefreshTimeout);
+    }
   },
 
-  getToken: () => localStorage.getItem(TOKEN_KEY),
+  verifyToken: async () => {
+    try {
+      const token = authService.getToken();
+      if (!token) {
+        throw new Error('No auth token');
+      }
+
+      const response = await api.post("/api/auth/verify");
+      return response.data.valid;
+    } catch (error) {
+      console.error('Token verification error:', error);
+      return false;
+    }
+  },
+
+  getToken: () => {
+    const authData = localStorage.getItem(TOKEN_KEY);
+    if (!authData) return null;
+    
+    try {
+      const { token } = JSON.parse(authData);
+      return token;
+    } catch (error) {
+      console.error('Error parsing token:', error);
+      return null;
+    }
+  },
 
   isAuthenticated: () => {
-    const token = localStorage.getItem(TOKEN_KEY);
-    const user = localStorage.getItem(USER_KEY);
-    return !!(token && user);
-  },
+    try {
+      const authData = JSON.parse(localStorage.getItem(TOKEN_KEY));
+      const user = localStorage.getItem(USER_KEY);
+      
+      if (!authData || !user) return false;
+      
+      // Check if token is expired
+      if (Date.now() >= authData.expiry) {
+        authService.logout();
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Auth check error:', error);
+      return false;
+    }
+  }
+};
+
+// Helper function to generate device fingerprint
+const generateDeviceFingerprint = async () => {
+  const components = [
+    navigator.userAgent,
+    navigator.language,
+    new Date().getTimezoneOffset(),
+    screen.width,
+    screen.height,
+    screen.colorDepth
+  ];
+  
+  // Use SubtleCrypto for secure hashing
+  const msgBuffer = new TextEncoder().encode(components.join('###'));
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+};
+
+// Helper function to schedule token refresh
+const scheduleTokenRefresh = (expiryTime) => {
+  if (window.tokenRefreshTimeout) {
+    clearTimeout(window.tokenRefreshTimeout);
+  }
+  
+  const timeUntilRefresh = expiryTime - Date.now() - REFRESH_BUFFER;
+  window.tokenRefreshTimeout = setTimeout(async () => {
+    try {
+      await authService.refreshToken();
+    } catch (error) {
+      console.error('Scheduled token refresh failed:', error);
+      // Force logout if refresh fails
+      authService.logout();
+      window.location.href = '/login';
+    }
+  }, timeUntilRefresh);
 };

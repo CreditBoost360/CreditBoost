@@ -1,0 +1,35 @@
+{
+  "name": "CreditBoost",
+  "short_name": "CreditBoost",
+  "description": "Comprehensive credit score management and financial education platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F6F8F6",
+  "theme_color": "#02A669",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo-no-bg.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-no-bg.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "View Credit Score",
+      "short_name": "Credit Score",
+      "description": "Check your credit score",
+      "url": "/credit-score",
+      "icons": [{ "src": "/logo-no-bg.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["finance", "business"],
+  "prefer_related_applications": false
+}
