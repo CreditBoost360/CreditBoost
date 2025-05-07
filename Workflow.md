@@ -1,119 +1,142 @@
-# WokFlow
+# How We Work Together on CreditBoost
 
-## 1. Developer Workflow
+This document explains how our team works together to build and improve CreditBoost.
 
-### Steps for the Developer
+## For Developers: Making Changes to the Code
 
-1. **Fetch Updates from `main`**:
-   Ensure your local environment is up-to-date with the latest changes from `main`.
+### Your Step-by-Step Process
+
+1. **Get the latest version**:
+   Make sure you have the most recent code before starting.
 
    ```bash
    git fetch origin main
    ```
 
-2. **Create a New Feature Branch**:
-   Create a new branch for your feature or bug fix from `main`.
+2. **Create your own working copy**:
+   Make a new branch where you can safely make changes.
 
    ```bash
-   git checkout -b feature/my-feature origin/main
+   git checkout -b feature/my-new-feature origin/main
    ```
 
-3. **Make Changes and Commit**:
-   After making changes, commit them to your feature branch.
+3. **Make your changes and save them**:
+   After making your improvements, save them to your branch.
 
    ```bash
    git add .
-   git commit -m "Description of the feature"
+   git commit -m "Added this cool new feature"
    ```
 
-4. **Push Your Feature Branch to Remote**:
-   Push your changes to the remote feature branch.
+4. **Share your changes with the team**:
+   Upload your changes so others can see them.
 
    ```bash
-   git push origin feature/my-feature
+   git push origin feature/my-new-feature
    ```
 
-5. **Create a Pull Request (PR) to `main`**:
-   Once you're done, create a pull request to merge your `feature/my-feature` branch into `main`.
-   - Assign reviewers to check your code.
-   - Make any required changes based on feedback.
+5. **Ask for your changes to be added to the main project**:
+   Create a pull request to get your code reviewed and merged.
+   - Ask specific team members to review your code
+   - Make any changes they suggest
 
-6. **Delete the Feature Branch**:
-   After merging, delete the feature branch:
+6. **Clean up when done**:
+   After your changes are accepted, you can remove your working copy.
 
    ```bash
-   git branch -d feature/my-feature
-   git push origin --delete feature/my-feature
+   git branch -d feature/my-new-feature
+   git push origin --delete feature/my-new-feature
    ```
 
----
+## For Code Reviewers: Checking Others' Work
 
-## 2. Reviewer Workflow
+### Your Step-by-Step Process
 
-### Steps for the Reviewer
-
-1. **Fetch and Checkout the Feature Branch**:
-   Review the feature branch by checking it out locally.
+1. **Look at the proposed changes**:
+   Download the code you need to review.
 
    ```bash
-   git fetch origin feature/my-feature
-   git checkout feature/my-feature
+   git fetch origin feature/my-new-feature
+   git checkout feature/my-new-feature
    ```
 
-2. **Review Changes**:
-   Review the code using `git diff`, `git log`, and other tools. Run tests to ensure the code works as expected.
+2. **Check the code carefully**:
+   Review the code, run tests, and make sure everything works correctly.
 
-3. **Approve or Request Changes**:
-   - If everything looks good, approve the pull request.
-   - If changes are needed, request them, and the developer will update the feature branch.
+3. **Approve or suggest improvements**:
+   - If it looks good, approve the pull request
+   - If changes are needed, explain what needs to be fixed
 
-4. **Merge the Pull Request into `main`**:
-   Once the pull request is approved, **the reviewer** is responsible for merging the feature branch into the `main` branch:
-   - Go to the pull request and click "Merge" to merge the feature branch into `main`.
-   - After merging, the feature branch can be deleted to keep the repository clean.
+4. **Add approved changes to the main project**:
+   Once approved, YOU (the reviewer) should merge the changes into the main project.
 
----
+## For Team Leaders: Releasing to Production
 
-## 3. Team Lead Workflow
+### Your Step-by-Step Process
 
-### Steps for the Team Lead
-
-1. **Fetch the Latest Changes from `main`**:
-   Ensure your local environment is updated with the latest changes from `main`.
+1. **Get the latest approved code**:
+   Make sure you have the most recent approved changes.
 
    ```bash
    git fetch origin main
    git checkout main
    ```
 
-2. **Review and Test the Latest Changes**:
-   Review the latest changes merged into `main`. Run tests to ensure everything is ready for production.
+2. **Final check before release**:
+   Review the latest changes and run tests to make sure everything is ready.
 
-3. **Merge `main` into `production`**:
-   If everything looks good, merge the latest changes into the `production` branch.
+3. **Move approved changes to the production version**:
+   Update the production branch with the latest approved changes.
 
    ```bash
    git checkout production
    git merge origin/main
    ```
 
-4. **Push the `production` Branch to Remote**:
-   After merging, push the `production` branch to the remote repository.
+4. **Release the new version**:
+   Push the updated production version to release it.
 
    ```bash
    git push origin production
    ```
 
----
+## Simple Summary
 
-### Summary of Pull Requests and Merging
+1. **Developers** create new features in separate branches and request reviews
+2. **Reviewers** check the code and approve good changes
+3. **Team Leaders** move approved changes to the production version
 
-1. **Developer**: Pushes changes to a **feature branch** and opens a **pull request** to merge into `main`.
-2. **Reviewer**: Reviews the pull request and **merges** the feature branch into `main`.
-3. **Team Lead**: Reviews and merges changes from `main` to `production`.
+## Basic Rules
 
-## Guidelines
+- Follow our coding style guidelines
+- Make sure your code passes all tests before submitting
+- Keep your code up to date with the main branch
+- Write clear commit messages explaining what you changed
 
-- Follow the project’s coding standards.
-- Ensure tests are written and passing before submitting a pull request.
-- Keep your branches up to date with `main`.
+## License
+
+This project is licensed under the MIT License.
+
+```
+MIT License
+
+Copyright (c) 2023 CreditBoost
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```

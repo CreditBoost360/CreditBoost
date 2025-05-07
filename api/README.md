@@ -1,66 +1,45 @@
-# CreditBoost API
+# CreditBoost API: The Engine Behind the App
 
-Secure API for the CreditBoost application.
+## What This Does
 
-## Authentication Methods
+This is the behind-the-scenes engine that powers the CreditBoost app. It handles:
+- User accounts and logins
+- Secure connections to credit bureaus
+- Data processing and analysis
+- Security and privacy protection
 
-The CreditBoost API supports multiple authentication methods:
+## Ways to Log In
 
-### 1. Email/Password Authentication
+We offer multiple secure ways for users to access their accounts:
 
-Standard email and password authentication using Supabase.
+### 1. Email and Password
+The traditional username and password login.
 
-```
-POST /auth/register
-POST /auth/login
-```
+### 2. Google Account
+Quick login using your Google account.
 
-### 2. Google OAuth Authentication
+### 3. Text Message Code
+We send a one-time code to your phone.
 
-Sign in with Google account.
+### 4. Email Code
+We send a one-time code to your email.
 
-```
-GET /auth/google
-GET /auth/callback/google
-POST /auth/google/verify
-```
+## For Developers: Setting Up
 
-### 3. SMS OTP Authentication
-
-One-time password authentication via SMS.
-
-```
-POST /auth/otp/sms/send
-POST /auth/otp/sms/verify
-```
-
-### 4. Email OTP Authentication
-
-One-time password authentication via email.
+To make this work on your computer, you need to set up some secret keys and configuration settings in a file called `.env`:
 
 ```
-POST /auth/otp/email/send
-POST /auth/otp/email/verify
-```
+# Security keys (keep these secret!)
+ENCRYPTION_KEY=your-secret-key
+JWT_SECRET=another-secret-key
+SESSION_SECRET=yet-another-secret
+COOKIE_SECRET=one-more-secret
 
-## Environment Setup
-
-Make sure to set up the following environment variables in your `.env` file:
-
-```
-# Required for encryption
-ENCRYPTION_KEY=your-encryption-key
-
-# Required for authentication
-JWT_SECRET=your-jwt-secret
-SESSION_SECRET=your-session-secret
-COOKIE_SECRET=your-cookie-secret
-
-# Supabase configuration
+# Supabase connection (our database)
 SUPABASE_URL=your-supabase-url
 SUPABASE_KEY=your-supabase-key
 
-# Email configuration (for production)
+# Email settings (for sending notifications)
 EMAIL_HOST=smtp.example.com
 EMAIL_PORT=587
 EMAIL_SECURE=false
@@ -71,15 +50,15 @@ EMAIL_FROM=noreply@creditboost.app
 
 ## Getting Started
 
-1. Install dependencies:
+1. Install all the necessary components:
    ```
    npm install
    ```
 
-2. Set up environment variables:
+2. Set up your configuration:
    ```
    cp .env.example .env
-   # Edit .env with your configuration
+   # Then edit the .env file with your information
    ```
 
 3. Start the development server:
@@ -89,9 +68,38 @@ EMAIL_FROM=noreply@creditboost.app
 
 ## Security Features
 
-- CSRF protection
-- XSS protection
-- Secure encryption
-- Rate limiting
-- Device fingerprinting
-- JWT with enhanced security
+We take security seriously and have implemented:
+- Protection against cross-site request forgery (CSRF)
+- Protection against cross-site scripting (XSS)
+- Strong encryption for sensitive data
+- Limits on how many requests can be made (rate limiting)
+- Device recognition for suspicious login attempts
+- Secure authentication tokens
+
+## License
+
+This project is licensed under the MIT License.
+
+```
+MIT License
+
+Copyright (c) 2023 CreditBoost
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
