@@ -33,15 +33,134 @@ CreditBoost is a simple but powerful app that helps you understand and improve y
 4. The app suggests specific actions to improve your score
 5. You can track your progress over time
 
-## Technical Details (For Developers)
+---
 
-This project uses modern web technologies:
-- Frontend: React.js with a clean, mobile-friendly design
-- Backend: Node.js and Java services
-- Security: Multi-factor authentication and data encryption
-- Data: Connects with major credit bureaus through secure APIs
+# For Developers
 
-## Getting Started
+## Tech Stack Overview
+
+- **Frontend**: 
+  - React.js with Vite for fast development
+  - Tailwind CSS with Shadcn UI components for styling
+  - React Router for navigation
+  - Lucide React for icons
+
+- **Backend**: 
+  - Node.js Express API server for main services
+  - Java SpringBoot for specialized financial processing
+  - Supabase for authentication and database
+  - JWT for secure token-based authentication
+
+- **Security**: 
+  - Multi-factor authentication
+  - Device fingerprinting
+  - Rate limiting
+  - CSRF and XSS protection
+  - Encryption for sensitive data
+
+- **Blockchain**:
+  - Universal Credit Passport implementation
+  - Smart contracts for secure credit data
+
+## Project Structure
+
+```
+CreditBoost/
+├── api/                  # Node.js Express API server
+│   ├── src/              # Source code
+│   │   ├── auth/         # Authentication modules
+│   │   ├── routes/       # API routes
+│   │   ├── services/     # Business logic services
+│   │   ├── payments/     # Payment processing modules
+│   │   └── security/     # Security implementations
+├── frontEnd/
+│   └── credit-boost/     # React frontend application
+│       ├── src/
+│       │   ├── components/  # Reusable UI components
+│       │   ├── pages/       # Application pages
+│       │   ├── services/    # API client services
+│       │   ├── context/     # React context providers
+│       │   └── hooks/       # Custom React hooks
+├── server/
+│   └── Backend SpringBoot/  # Java backend services
+├── universal-credit-passport/ # Blockchain credit passport
+└── sdk/                     # Client SDK for API integration
+```
+
+## Development Setup
+
+### Prerequisites
+
+- Node.js (v16+)
+- Java JDK 17
+- PostgreSQL
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/CreditBoost.git
+   cd CreditBoost
+   ```
+
+2. Set up environment variables:
+   ```
+   cp api/.env.example api/.env
+   # Edit the .env file with your configuration
+   ```
+
+3. Install API dependencies:
+   ```
+   cd api
+   npm install
+   ```
+
+4. Install frontend dependencies:
+   ```
+   cd ../frontEnd/credit-boost
+   npm install
+   ```
+
+5. Set up the database:
+   ```
+   cd ../../server/Backend\ SpringBoot/
+   ./setup-postgres.sh
+   ```
+
+### Running the Application
+
+1. Start the API server:
+   ```
+   cd api
+   npm start
+   ```
+
+2. Start the frontend development server:
+   ```
+   cd ../frontEnd/credit-boost
+   npm run dev
+   ```
+
+3. Start the Java backend services:
+   ```
+   cd ../../server/Backend\ SpringBoot/
+   ./run-app.sh
+   ```
+
+## API Documentation
+
+For detailed API documentation, see the [API README](./api/README.md).
+
+## Contributing
+
+Please see our [Workflow Guide](./Workflow.md) for information on how to contribute to this project.
+
+---
+
+# General Information
+
+## Getting Started (For Users)
 
 Visit [www.creditboost.com](http://www.creditboost.com) to create your account or download the app from your app store.
 
