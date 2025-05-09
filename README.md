@@ -1,197 +1,150 @@
-# CreditBoost: Your Credit Improvement Companion
+# CreditBoost Platform
 
-## What is CreditBoost?
+CreditBoost is a comprehensive financial platform that helps users understand, improve, and leverage their credit profile. The platform provides personalized financial insights, credit score monitoring, and tools to enhance financial well-being.
 
-CreditBoost is a simple but powerful app that helps you understand and improve your credit score. Think of it as a personal financial coach that lives in your phone or computer.
+## 🌟 Key Features
 
-## What Does It Actually Do?
+### Universal Credit Passport
+- Official-looking digital credit identity document with country detection
+- Institution verification stamps
+- QR code verification
+- Shareable links with access control
+- Downloadable HTML document that resembles a government passport
 
-1. **Shows Your Credit Score**: Connects to credit bureaus (TransUnion, Experian, Equifax) to show your current score in one place.
+### Financial Dashboard
+- Comprehensive financial data analysis
+- Credit score visualization and tracking
+- Budget recommendations and spending analysis
+- Debt reduction strategies
+- Personalized financial insights
 
-2. **Explains Your Score**: Uses AI to explain in plain language why your score is what it is and what affects it.
+### Data Integration
+- Automatic connection to financial data sources
+- Manual data upload options
+- Secure data storage and processing
+- Real-time updates from connected sources
 
-3. **Helps You Improve**: Gives you step-by-step actions to take that can improve your score over time.
+### Multi-Language Support
+- Support for multiple languages (English, Kiswahili, French, Spanish, Arabic, Chinese)
+- Automatic language detection
+- Localized content throughout the application
 
-4. **Keeps Your Information Safe**: Uses bank-level security to protect all your financial data.
+### Credit Simulation
+- Interactive tools to simulate credit score changes
+- What-if scenarios for financial decisions
+- Personalized recommendations based on simulations
 
-5. **Creates a "Credit Passport"**: Makes a secure digital version of your credit history that you can share when needed (like when applying for loans).
+## 🚀 Recent Enhancements
 
-6. **Teaches About Money**: Includes simple lessons about credit, loans, and saving money.
+### Enhanced Universal Credit Passport
+- Added country detection with appropriate flags
+- Implemented institution stamping system
+- Created official-looking document design
+- Added QR code verification
+- Integrated logo and branding
+- Implemented sharing controls and history tracking
 
-## Who Is This For?
+### Comprehensive Financial Dashboard
+- Added data-driven financial breakdown
+- Implemented credit score simulation tool
+- Created personalized recommendation engine
+- Added automatic data connection capabilities
+- Enhanced visualization of financial data
 
-- People who want to improve their credit score
-- Anyone confused about how credit works
-- People applying for loans or mortgages
-- Anyone who wants to better understand their financial standing
+### Improved User Experience
+- Added multi-language support
+- Enhanced mobile responsiveness
+- Improved accessibility features
+- Streamlined data upload process
+- Added automatic data connection
 
-## How It Works (In Simple Terms)
+## 💻 Technical Implementation
 
-1. You create an account and securely connect your credit information
-2. The app analyzes your credit history and current standing
-3. You get a dashboard showing your score and what affects it
-4. The app suggests specific actions to improve your score
-5. You can track your progress over time
+### Frontend
+- React.js with functional components and hooks
+- Tailwind CSS for styling
+- Context API for state management
+- Dynamic data visualization with Recharts
+- Responsive design for all device sizes
 
----
+### Data Processing
+- Automatic data parsing from various sources
+- Machine learning algorithms for credit score prediction
+- Data-driven recommendation engine
+- Secure data storage with encryption
 
-# For Developers
+### Security Features
+- End-to-end encryption for sensitive data
+- Role-based access control
+- Secure sharing mechanisms
+- Verification system for institutions
 
-## Tech Stack Overview
-
-- **Frontend**: 
-  - React.js with Vite for fast development
-  - Tailwind CSS with Shadcn UI components for styling
-  - React Router for navigation
-  - Lucide React for icons
-
-- **Backend**: 
-  - Node.js Express API server for main services
-  - Java SpringBoot for specialized financial processing
-  - Supabase for authentication and database
-  - JWT for secure token-based authentication
-
-- **Security**: 
-  - Multi-factor authentication
-  - Device fingerprinting
-  - Rate limiting
-  - CSRF and XSS protection
-  - Encryption for sensitive data
-
-- **Blockchain**:
-  - Universal Credit Passport implementation
-  - Smart contracts for secure credit data
-
-## Project Structure
-
-```
-CreditBoost/
-├── api/                  # Node.js Express API server
-│   ├── src/              # Source code
-│   │   ├── auth/         # Authentication modules
-│   │   ├── routes/       # API routes
-│   │   ├── services/     # Business logic services
-│   │   ├── payments/     # Payment processing modules
-│   │   └── security/     # Security implementations
-├── frontEnd/
-│   └── credit-boost/     # React frontend application
-│       ├── src/
-│       │   ├── components/  # Reusable UI components
-│       │   ├── pages/       # Application pages
-│       │   ├── services/    # API client services
-│       │   ├── context/     # React context providers
-│       │   └── hooks/       # Custom React hooks
-├── server/
-│   └── Backend SpringBoot/  # Java backend services
-├── universal-credit-passport/ # Blockchain credit passport
-└── sdk/                     # Client SDK for API integration
-```
-
-## Development Setup
+## 🔧 Setup and Installation
 
 ### Prerequisites
-
-- Node.js (v16+)
-- Java JDK 17
-- PostgreSQL
+- Node.js (v14 or higher)
 - npm or yarn
+- MongoDB (for backend)
 
-### Installation
-
-1. Clone the repository:
+### Installation Steps
+1. Clone the repository
    ```
    git clone https://github.com/yourusername/CreditBoost.git
+   ```
+
+2. Install dependencies
+   ```
    cd CreditBoost
-   ```
-
-2. Set up environment variables:
-   ```
-   cp api/.env.example api/.env
-   # Edit the .env file with your configuration
-   ```
-
-3. Install API dependencies:
-   ```
-   cd api
    npm install
    ```
 
-4. Install frontend dependencies:
+3. Start the development server
    ```
-   cd ../frontEnd/credit-boost
-   npm install
-   ```
-
-5. Set up the database:
-   ```
-   cd ../../server/Backend\ SpringBoot/
-   ./setup-postgres.sh
-   ```
-
-### Running the Application
-
-1. Start the API server:
-   ```
-   cd api
-   npm start
-   ```
-
-2. Start the frontend development server:
-   ```
-   cd ../frontEnd/credit-boost
    npm run dev
    ```
 
-3. Start the Java backend services:
-   ```
-   cd ../../server/Backend\ SpringBoot/
-   ./run-app.sh
-   ```
+4. Access the application at `http://localhost:5173`
 
-## API Documentation
+## 📱 Usage Guide
 
-For detailed API documentation, see the [API README](./api/README.md).
+### Accessing the Credit Passport
+1. Navigate to the Credit Passport page
+2. View your passport details and status
+3. Download your official Credit Passport document
+4. Share your passport with financial institutions
+5. Track who has access to your passport
 
-## Contributing
+### Using the Financial Dashboard
+1. Connect your financial data sources or upload statements
+2. View your comprehensive financial breakdown
+3. Explore credit score simulation scenarios
+4. Review personalized recommendations
+5. Track your financial progress over time
 
-Please see our [Workflow Guide](./Workflow.md) for information on how to contribute to this project.
+### Managing Data Sources
+1. Use automatic connection for seamless data integration
+2. Alternatively, upload financial statements manually
+3. View and manage connected data sources
+4. Refresh data as needed
+
+## 🤝 Contributing
+
+We welcome contributions to the CreditBoost platform! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 📞 Contact
+
+For questions or support, please contact us at support@creditboost.co.ke.
 
 ---
 
-# General Information
-
-## Getting Started (For Users)
-
-Visit [www.creditboost.com](http://www.creditboost.com) to create your account or download the app from your app store.
-
-## License
-
-This project is licensed under the MIT License - see below for details:
-
-```
-MIT License
-
-Copyright (c) 2023 CreditBoost
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
-## Contact
-
-For support or questions: help@creditboost.com
+Built with ❤️ by the CreditBoost Team
