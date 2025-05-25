@@ -2,7 +2,6 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import { applySecurityMiddleware, initializeSecurity } from './security/index.js';
-import { encryption } from './encryption.js';
 import { config } from './config.js';
 import authRoutes from './routes/authRoutes.js';
 
@@ -13,45 +12,78 @@ const PORT = config.port;
 // Initialize security components
 initializeSecurity().catch(error => {
   console.error('Security initialization failed:', error);
-  process.exit(1);
+  // Don't exit process, just log the error
+  console.error('Continuing despite security initialization failure');
 });
 
 // Basic middleware
-app.use(express.json());
+app.use(express.json({
+  verify: (req, res, buf) => {
+    try {
+      // Store the raw body for debugging
+      req.rawBody = buf.toString();
+      console.log('Raw request body:', req.rawBody);
+    } catch (e) {
+      console.error('Error parsing request body:', e);
+    }
+  }
+}));
 app.use(express.urlencoded({ extended: true }));
 
-// Apply security middleware
-applySecurityMiddleware(app, {
-  headers: {
-    // Allow specific scripts if needed for your application
-    allowScripts: '',
-    // Allow specific styles if needed for your application
-    allowStyles: ''
-  },
-  cache: {
-    noStore: true
-  },
-  xss: {
-    skipFields: ['encryptedData'] // Skip XSS protection for already encrypted fields
-  },
-  csrfExcludePaths: ['/api/webhook'] // Exclude webhooks from CSRF protection
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log('Headers:', req.headers);
+  if (req.body && Object.keys(req.body).length > 0) {
+    const sanitizedBody = { ...req.body };
+    if (sanitizedBody.password) sanitizedBody.password = '***';
+    console.log('Body:', sanitizedBody);
+  }
+  next();
 });
 
-// CORS configuration - ensure it's applied before routes
+// CORS middleware - simplified configuration
 app.use(cors({
-  origin: config.allowedOrigins.length > 0 ? config.allowedOrigins : '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-Device-Fingerprint', 'X-Nonce', 'X-Timestamp', 'X-Requested-With'],
-  exposedHeaders: ['X-Token-Expiring', 'X-Timestamp'],
+  origin: 'http://localhost:5173', // Explicitly set the allowed origin
   credentials: true,
-  maxAge: 86400, // 24 hours
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'X-CSRF-Token', 'X-Device-Fingerprint', 'X-Nonce', 'X-Timestamp']
 }));
+
+// Apply security middleware with reduced settings
+try {
+  app.use(helmet({
+    contentSecurityPolicy: false, // Disable CSP for now
+    crossOriginEmbedderPolicy: false, // Disable COEP for now
+    crossOriginOpenerPolicy: false, // Disable COOP for now
+    crossOriginResourcePolicy: false // Disable CORP for now
+  }));
+} catch (error) {
+  console.error('Error applying helmet middleware:', error);
+}
 
 // Routes
 app.get('/', (req, res) => {
-  res.json({ message: 'CreditBoost API is running securely' });
+  res.json({ message: 'CreditBoost API is running' });
+});
+
+// CSRF token endpoint
+app.get('/api/csrf-token', (req, res) => {
+  // Set CSRF cookie
+  res.cookie('XSRF-TOKEN', require('crypto').randomBytes(20).toString('hex'), {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  });
+  res.status(200).json({ message: 'CSRF token set' });
+});
+
+// Test CORS route
+app.get('/api/test-cors', (req, res) => {
+  res.json({ 
+    message: 'CORS test successful',
+    origin: req.headers.origin || 'No origin header found'
+  });
 });
 
 // Auth routes
@@ -61,13 +93,10 @@ app.use('/api/auth', authRoutes);
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   
-  // Don't expose error details in production
-  const message = config.nodeEnv === 'production' 
-    ? 'An error occurred' 
-    : err.message;
-  
+  // Send detailed error in development
   res.status(err.status || 500).json({
-    error: message
+    error: err.message || 'Internal Server Error',
+    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack
   });
 });
 

@@ -10,44 +10,63 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { authService } from '@/services/auth.service';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '@/context/AppContext';
 
 // User Account Dropdown Component
 const UserAccountDropdown = () => {
-    const { user } = useContext(AppContext)
+    const { user, logout } = useContext(AppContext);
     const navigate = useNavigate();
 
     const handleLogout = () => {
-      authService.logout();
-      navigate('/login');
+      logout();
     };
   
     const handleProfileClick = () => {
       navigate('/account-settings');
     };
   
+    // Get user initials for avatar fallback
+    const getInitials = () => {
+      if (!user) return 'U';
+      
+      const firstName = user.firstName || '';
+      const lastName = user.lastName || '';
+      
+      if (firstName && lastName) {
+        return `${firstName[0]}${lastName[0]}`.toUpperCase();
+      } else if (firstName) {
+        return firstName[0].toUpperCase();
+      } else if (user.email) {
+        return user.email[0].toUpperCase();
+      }
+      
+      return 'U';
+    };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="flex items-center space-x-2 hover:bg-accent rounded-full p-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage loading="lazy" fetchPriority="high" src="/api/placeholder/32/32" alt="User" />
-            <AvatarFallback>US</AvatarFallback>
+            {user?.profileImage ? (
+              <AvatarImage loading="lazy" fetchPriority="high" src={user.profileImage} alt={user?.firstName || 'User'} />
+            ) : null}
+            <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <div className="flex items-center p-2 space-x-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage loading="lazy" fetchPriority="high" src="/api/placeholder/32/32" alt="User" />
-            <AvatarFallback>US</AvatarFallback>
+            {user?.profileImage ? (
+              <AvatarImage loading="lazy" fetchPriority="high" src={user.profileImage} alt={user?.firstName || 'User'} />
+            ) : null}
+            <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <span className="text-sm font-medium">{user?.firstName}</span>
-            <span className="text-xs text-muted-foreground">{user?.email}</span>
+            <span className="text-sm font-medium">{user?.firstName || 'User'} {user?.lastName || ''}</span>
+            <span className="text-xs text-muted-foreground">{user?.email || 'user@example.com'}</span>
           </div>
         </div>
         <DropdownMenuSeparator />

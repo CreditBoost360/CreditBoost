@@ -1,182 +1,104 @@
 import React, { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Upload, X, Camera, Image as ImageIcon, Check } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { Camera, Upload, X } from 'lucide-react';
 
-const PhotoUpload = ({ currentPhoto, onPhotoChange, className = "" }) => {
-  const [dragActive, setDragActive] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(currentPhoto || null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
-  const inputRef = useRef(null);
-
-  // Handle drag events
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
+const PhotoUpload = ({ currentPhoto, onPhotoChange }) => {
+  const [previewUrl, setPreviewUrl] = useState(currentPhoto);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef(null);
+  
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Preview the image
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result);
+      onPhotoChange(file);
+    };
+    reader.readAsDataURL(file);
   };
-
-  // Handle drop event
+  
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+  
   const handleDrop = (e) => {
     e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
-    }
-  };
-
-  // Handle file input change
-  const handleChange = (e) => {
-    e.preventDefault();
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0]);
-    }
-  };
-
-  // Process the selected file
-  const handleFile = (file) => {
-    // Check if file is an image
-    if (!file.type.match('image.*')) {
-      alert('Please select an image file (jpg, png, etc.)');
-      return;
-    }
+    setIsDragging(false);
     
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File is too large. Maximum size is 5MB.');
-      return;
-    }
-
-    // Create preview URL
-    const fileUrl = URL.createObjectURL(file);
-    setPreviewUrl(fileUrl);
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
     
-    // Simulate upload process
-    setUploading(true);
-    
-    // In a real app, you would upload the file to your server here
-    setTimeout(() => {
-      setUploading(false);
-      setUploadSuccess(true);
-      
-      // Reset success message after 3 seconds
-      setTimeout(() => setUploadSuccess(false), 3000);
-      
-      // Call the parent component's callback with the file
-      if (onPhotoChange) {
-        onPhotoChange(file);
-      }
-    }, 1500);
+    // Preview the image
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result);
+      onPhotoChange(file);
+    };
+    reader.readAsDataURL(file);
   };
-
-  // Trigger file input click
-  const onButtonClick = () => {
-    inputRef.current.click();
-  };
-
-  // Remove current photo
-  const removePhoto = () => {
+  
+  const handleRemovePhoto = () => {
     setPreviewUrl(null);
-    if (onPhotoChange) {
-      onPhotoChange(null);
-    }
+    onPhotoChange(null);
   };
-
+  
   return (
-    <div className={`${className}`}>
-      <div className="mb-2 flex justify-between items-center">
-        <label className="block text-sm font-medium text-gray-700">Passport Photo</label>
-        {previewUrl && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={removePhoto}
-            className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-          >
-            <X size={16} className="mr-1" />
-            Remove
-          </Button>
-        )}
-      </div>
-      
+    <div className="space-y-4">
       {previewUrl ? (
-        <div className="relative rounded-lg overflow-hidden border border-gray-200">
+        <div className="relative">
           <img 
             src={previewUrl} 
-            alt="User photo" 
-            className="w-full h-48 object-cover"
+            alt="Profile Preview" 
+            className="w-32 h-32 rounded-full object-cover mx-auto border-4 border-white shadow-md"
           />
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-3">
-            <p className="text-white text-xs">Click Remove to change your photo</p>
-          </div>
+          <button
+            onClick={handleRemovePhoto}
+            className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 shadow-md"
+          >
+            <X size={16} />
+          </button>
         </div>
       ) : (
         <div
-          className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
-            dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400"
+          className={`border-2 border-dashed rounded-lg p-8 text-center ${
+            isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
           }`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleChange}
-            className="hidden"
-          />
-          
-          <div className="flex flex-col items-center justify-center space-y-3">
-            <div className="p-3 rounded-full bg-blue-100">
-              <Camera size={24} className="text-blue-600" />
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-700">Drag and drop your photo here</p>
-              <p className="text-xs text-gray-500 mt-1">or</p>
-            </div>
-            <Button 
-              type="button"
-              onClick={onButtonClick}
-              variant="outline"
-              size="sm"
-              className="mt-2"
-              disabled={uploading}
-            >
-              {uploading ? (
-                <>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="mr-2"
-                  >
-                    <Upload size={16} />
-                  </motion.div>
-                  Uploading...
-                </>
-              ) : uploadSuccess ? (
-                <>
-                  <Check size={16} className="mr-2 text-green-500" />
-                  Uploaded!
-                </>
-              ) : (
-                <>
-                  <ImageIcon size={16} className="mr-2" />
-                  Browse Files
-                </>
-              )}
-            </Button>
-            <p className="text-xs text-gray-500 mt-1">JPG, PNG or GIF (max. 5MB)</p>
-          </div>
+          <Camera className="mx-auto h-12 w-12 text-gray-400" />
+          <p className="mt-2 text-sm text-gray-600">
+            Drag and drop your photo here, or click to select
+          </p>
         </div>
       )}
+      
+      <div className="flex justify-center">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept="image/*"
+          className="hidden"
+        />
+        <Button
+          type="button"
+          onClick={() => fileInputRef.current.click()}
+          variant="outline"
+        >
+          <Upload className="mr-2 h-4 w-4" />
+          {previewUrl ? 'Change Photo' : 'Upload Photo'}
+        </Button>
+      </div>
     </div>
   );
 };

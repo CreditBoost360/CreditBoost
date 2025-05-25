@@ -1,10 +1,12 @@
-import React, { useState,useEffect,useContext } from 'react';
-import { FaBars, FaSignOutAlt, FaBell, FaCog, } from 'react-icons/fa';
+import React, { useState, useEffect, useContext } from 'react';
+import { FaBars, FaSignOutAlt, FaCog } from 'react-icons/fa';
 import { FaPerson, FaX } from 'react-icons/fa6';
 //import Logo from '../../public/logo.png';
 import { RiAccountCircleFill } from 'react-icons/ri';
 import { MdDashboard, MdWallet } from "react-icons/md";
 import { AppContext } from '../context/AppContext';
+import NotificationCenter from './NotificationCenter';
+import LanguageSwitcher from './LanguageSwitcher';
 
 function Navbar({ toggleSidebar }) {
     const [currentDate, setCurrentDate] = useState("");
@@ -40,7 +42,8 @@ function Navbar({ toggleSidebar }) {
                     </p>
                 </div>
                 <nav className="md:flex flex-row hidden items-center space-x-4">
-                    <FaBell />
+                    <NotificationCenter />
+                    <LanguageSwitcher />
                     <p>{name}</p>
                     <a href="#" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
                         <RiAccountCircleFill className="text-2xl " />

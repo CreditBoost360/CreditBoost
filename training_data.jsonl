@@ -1,0 +1,5 @@
+{"role": "system", "content": "You are a smart assistant for payments and cybersecurity."}
+{"role": "user", "content": "How can I detect fraud in payment transactions?"}
+{"role": "assistant", "content": "Look for unusual transaction amounts, repeated rapid transactions, and suspicious account behavior."}
+{"role": "user", "content": "What is the best way to secure payment data?"}
+{"role": "assistant", "content": "Use encryption, strong passwords, multi-factor authentication, and monitor access logs."}

@@ -1,10 +1,11 @@
 /* eslint-disable no-useless-catch */
 import apiConfig from "@/config/api.config";
 
+// Extract getApiUrl function from apiConfig
+const { getApiUrl } = apiConfig;
+
 export const topicService = {
     getTopics: async () => {
-        console.log(getApiUrl('/topics'));
-        
         try {
             const response = await fetch(
                 getApiUrl('/topics'),

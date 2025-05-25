@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Share2, Link, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Share2, Link, Trash2, Send, Bot, User as UserIcon } from 'lucide-react';
 import {
     Card,
     CardHeader,
     CardTitle,
-    CardContent
+    CardContent,
+    CardFooter
 } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
@@ -16,11 +17,19 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const DataChatInterface = () => {
     const [selectedSource, setSelectedSource] = useState('');
     const [selectedData, setSelectedData] = useState([]);
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState([
+        {
+            id: 'welcome',
+            text: "👋 Welcome to Data Talk! I'm your AI assistant ready to help you analyze and understand your financial data. Select your data source and files on the left, then ask me anything about your transactions, spending patterns, or financial insights.",
+            sender: 'ai',
+            timestamp: new Date().toISOString()
+        }
+    ]);
     const [inputMessage, setInputMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [availableData, setAvailableData] = useState([]);
@@ -32,6 +41,9 @@ const DataChatInterface = () => {
     const [deleteHistory, setDeleteHistory] = useState(null);
     // Add a constant for maximum messages to prevent memory leaks
     const MAX_MESSAGES = 100;
+    
+    // Reference for auto-scrolling chat
+    const messagesEndRef = useRef(null);
 
     const { toast } = useToast();
 
@@ -57,6 +69,11 @@ const DataChatInterface = () => {
             fetchChatHistories(currentPage);
         }
     }, [currentPage]);
+    
+    // Auto-scroll to bottom when messages change
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
     const fetchChatHistories = async (page) => {
         try {
@@ -313,8 +330,11 @@ const DataChatInterface = () => {
                 {/* Chat Interface - Right Panel */}
                 <div className="w-1/2 flex flex-col p-4">
                     <Card className="flex-1 flex flex-col">
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle>Chat with Your Data</CardTitle>
+                        <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
+                            <div className="flex items-center">
+                                <Bot className="h-5 w-5 mr-2 text-blue-500" />
+                                <CardTitle>Data Talk Assistant</CardTitle>
+                            </div>
                             <Input
                                 placeholder="Chat title..."
                                 value={chatTitle}
@@ -322,46 +342,66 @@ const DataChatInterface = () => {
                                 className="w-48"
                             />
                         </CardHeader>
-                        <CardContent className="flex-1 flex flex-col overflow-hidden">
+                        <CardContent className="flex-1 flex flex-col overflow-hidden pt-4">
                             <div className="flex-1 overflow-y-auto mb-4 space-y-4">
                                 {messages.map(message => (
                                     <div
                                         key={message.id}
-                                        className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                                        className={`flex items-start mb-4 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                                     >
+                                        {message.sender === 'ai' && (
+                                            <Avatar className="h-8 w-8 mr-2 mt-1">
+                                                <AvatarImage src="/logo-no-bg.png" alt="AI" />
+                                                <AvatarFallback className="bg-blue-100 text-blue-800">AI</AvatarFallback>
+                                            </Avatar>
+                                        )}
+                                        
                                         <div
-                                            className={`max-w-[80%] p-3 rounded-lg ${message.sender === 'user'
-                                                ? 'bg-blue-500 text-white'
-                                                : 'bg-gray-100'
-                                                }`}
+                                            className={`max-w-[80%] p-3 rounded-lg ${
+                                                message.sender === 'user'
+                                                    ? 'bg-blue-500 text-white rounded-tr-none'
+                                                    : 'bg-gray-100 rounded-tl-none'
+                                            }`}
                                         >
-                                            {message.text}
+                                            <div className="whitespace-pre-wrap">{message.text}</div>
+                                            <div className={`text-xs mt-1 ${message.sender === 'user' ? 'text-blue-200' : 'text-gray-500'}`}>
+                                                {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </div>
                                         </div>
+                                        
+                                        {message.sender === 'user' && (
+                                            <Avatar className="h-8 w-8 ml-2 mt-1">
+                                                <AvatarFallback className="bg-blue-500 text-white">
+                                                    <UserIcon className="h-4 w-4" />
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        )}
                                     </div>
                                 ))}
+                                <div ref={messagesEndRef} />
                             </div>
-
-                            {/* Input form - Fixed at bottom */}
-                            <form onSubmit={handleSendMessage} className="flex gap-2 flex-shrink-0">
-                                <input
+                        </CardContent>
+                        <CardFooter className="border-t pt-4">
+                            <form onSubmit={handleSendMessage} className="flex gap-2 w-full">
+                                <Input
                                     type="text"
                                     value={inputMessage}
                                     onChange={(e) => setInputMessage(e.target.value)}
                                     placeholder={selectedData.length === 0
                                         ? "Select data to start chatting..."
                                         : "Ask about your data..."}
-                                    className="flex-1 p-2 border rounded-md"
+                                    className="flex-1"
                                     disabled={selectedData.length === 0 || loading}
                                 />
-                                <button
+                                <Button 
                                     type="submit"
                                     disabled={selectedData.length === 0 || loading}
-                                    className="px-4 py-2 bg-blue-500 text-white rounded-md disabled:bg-gray-300"
+                                    className="px-4"
                                 >
-                                    {loading ? 'Sending...' : 'Send'}
-                                </button>
+                                    {loading ? 'Sending...' : <Send className="h-4 w-4" />}
+                                </Button>
                             </form>
-                        </CardContent>
+                        </CardFooter>
                     </Card>
                 </div>
                 {/* Chat History Table */}

@@ -1,6 +1,6 @@
 // API configuration
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.credvault.co.ke';
-const ADMIN_API_URL = import.meta.env.VITE_ADMIN_API_URL || 'https://admin-api.credvault.co.ke';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const ADMIN_API_URL = import.meta.env.VITE_ADMIN_API_URL || 'http://localhost:3000/admin';
 
 /**
  * API Configuration

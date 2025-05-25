@@ -14,7 +14,10 @@ const SignUp = () => {
         email: '',
         phone: '',
         password: '',
-        password2: ''
+        password2: '',
+        showPassword: false,
+        showConfirmPassword: false,
+        language: localStorage.getItem('preferredLanguage') || 'en'
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -60,7 +63,8 @@ const SignUp = () => {
                 lastName: formData.lastName,
                 email: formData.email,
                 password: formData.password,
-                phone: formData.phone || null
+                phoneNumber: formData.phone || null,
+                language: formData.language
             });
             
             console.log("Registration successful:", result);
@@ -83,6 +87,8 @@ const SignUp = () => {
             // Handle specific error cases
             if (err.message.includes('Email already registered')) {
                 setError('This email is already registered. Please try logging in instead.');
+            } else if (err.message.includes('Network error')) {
+                setError('Connection to server failed. Please check if the backend server is running and try again.');
             } else {
                 setError(err.message || 'Registration failed. Please try again.');
             }
@@ -188,26 +194,59 @@ const SignUp = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Password
                     </label>
-                    <input
-                        type="password"
-                        required
-                        value={formData.password}
-                        onChange={(e) => setFormData({...formData, password: e.target.value})}
-                        className="block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-sky-500 focus:ring-sky-500 dark:bg-gray-800 dark:border-gray-700"
-                    />
+                    <div className="relative">
+                        <input
+                            type={formData.showPassword ? "text" : "password"}
+                            required
+                            value={formData.password}
+                            onChange={(e) => setFormData({...formData, password: e.target.value})}
+                            className="block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-sky-500 focus:ring-sky-500 dark:bg-gray-800 dark:border-gray-700"
+                        />
+                        <button
+                            type="button"
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"
+                            onClick={() => setFormData({...formData, showPassword: !formData.showPassword})}
+                        >
+                            {formData.showPassword ? "Hide" : "Show"}
+                        </button>
+                    </div>
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Confirm Password
                     </label>
-                    <input
-                        type="password"
-                        required
-                        value={formData.password2}
-                        onChange={(e) => setFormData({...formData, password2: e.target.value})}
+                    <div className="relative">
+                        <input
+                            type={formData.showConfirmPassword ? "text" : "password"}
+                            required
+                            value={formData.password2}
+                            onChange={(e) => setFormData({...formData, password2: e.target.value})}
+                            className="block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-sky-500 focus:ring-sky-500 dark:bg-gray-800 dark:border-gray-700"
+                        />
+                        <button
+                            type="button"
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"
+                            onClick={() => setFormData({...formData, showConfirmPassword: !formData.showConfirmPassword})}
+                        >
+                            {formData.showConfirmPassword ? "Hide" : "Show"}
+                        </button>
+                    </div>
+                </div>
+                
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Preferred Language
+                    </label>
+                    <select
+                        value={formData.language}
+                        onChange={(e) => setFormData({...formData, language: e.target.value})}
                         className="block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-sky-500 focus:ring-sky-500 dark:bg-gray-800 dark:border-gray-700"
-                    />
+                    >
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                    </select>
                 </div>
 
                 <button

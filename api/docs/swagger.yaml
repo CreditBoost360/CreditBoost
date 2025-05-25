@@ -1,0 +1,558 @@
+openapi: 3.0.0
+info:
+  title: CreditBoost API
+  description: |
+    API for the CreditBoost platform, providing access to credit analysis, passport verification, and financial services.
+    
+    This API allows partners to integrate with the Universal Credit Passport system.
+  version: 1.0.0
+  contact:
+    name: CreditBoost API Support
+    email: api-support@creditboost.co.ke
+    url: https://developers.creditboost.co.ke
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.creditboost.co.ke/v1
+    description: Production API
+  - url: https://staging-api.creditboost.co.ke/v1
+    description: Staging API
+  - url: http://localhost:3000/api
+    description: Local Development
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+tags:
+  - name: Authentication
+    description: API key and token management
+  - name: Credit Passport
+    description: Universal Credit Passport operations
+  - name: Verification
+    description: Identity and credit verification
+  - name: Payments
+    description: Payment processing operations
+
+paths:
+  /auth/partner-token:
+    post:
+      summary: Get partner API token
+      description: |
+        Obtain an API token for accessing protected endpoints.
+        This endpoint converts your API key to a short-lived JWT token.
+      tags:
+        - Authentication
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                partnerId:
+                  type: string
+                  description: Partner ID
+              required:
+                - partnerId
+      responses:
+        '200':
+          description: Successful token generation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  token:
+                    type: string
+                    description: JWT access token
+                  expiresAt:
+                    type: string
+                    format: date-time
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /passport/create:
+    post:
+      summary: Create a new credit passport
+      description: Create a Universal Credit Passport for a user
+      tags:
+        - Credit Passport
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePassportRequest'
+      responses:
+        '201':
+          description: Credit passport created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassportResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /passport/score:
+    put:
+      summary: Update credit score
+      description: Update a user's credit score
+      tags:
+        - Credit Passport
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateScoreRequest'
+      responses:
+        '200':
+          description: Credit score updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreUpdateResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /passport/{userAddress}:
+    get:
+      summary: Get credit passport
+      description: Retrieve a user's credit passport data
+      tags:
+        - Credit Passport
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userAddress
+          in: path
+          required: true
+          description: Blockchain address or identifier of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Credit passport data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PassportResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Passport not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /passport/{userAddress}/kyc:
+    post:
+      summary: Upload KYC documents
+      description: Upload know-your-customer documents for verification
+      tags:
+        - Credit Passport
+        - Verification
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userAddress
+          in: path
+          required: true
+          description: Blockchain address or identifier of the user
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                documents:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: KYC documents to upload (max 5 files, 5MB each)
+      responses:
+        '200':
+          description: Documents uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: KYC documents uploaded successfully
+                  data:
+                    type: object
+                    properties:
+                      userAddress:
+                        type: string
+                      documentHashes:
+                        type: array
+                        items:
+                          type: string
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /passport/fraud-check:
+    post:
+      summary: Check for fraudulent activity
+      description: Analyze credit data for potentially fraudulent activity
+      tags:
+        - Credit Passport
+        - Verification
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FraudCheckRequest'
+      responses:
+        '200':
+          description: Fraud check results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FraudCheckResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /payments/process:
+    post:
+      summary: Process payment
+      description: Process a payment transaction
+      tags:
+        - Payments
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '200':
+          description: Payment processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreatePassportRequest:
+      type: object
+      properties:
+        userAddress:
+          type: string
+          description: Blockchain address or identifier of the user
+        creditScore:
+          type: integer
+          minimum: 300
+          maximum: 850
+          description: Credit score (300-850 range)
+        transactionHistory:
+          type: array
+          items:
+            type: string
+          description: List of financial transaction history records
+      required:
+        - userAddress
+        - creditScore
+        - transactionHistory
+
+    UpdateScoreRequest:
+      type: object
+      properties:
+        userAddress:
+          type: string
+          description: Blockchain address or identifier of the user
+        newCreditScore:
+          type: integer
+          minimum: 300
+          maximum: 850
+          description: New credit score (300-850 range)
+      required:
+        - userAddress
+        - newCreditScore
+
+    PassportResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Credit passport created successfully
+        data:
+          type: object
+          properties:
+            transactionHash:
+              type: string
+              description: Blockchain transaction hash
+            userAddress:
+              type: string
+              description: User's blockchain address
+            creditScore:
+              type: integer
+              description: Credit score
+      required:
+        - success
+
+    ScoreUpdateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Credit score updated successfully
+        data:
+          type: object
+          properties:
+            transactionHash:
+              type: string
+              description: Blockchain transaction hash
+            userAddress:
+              type: string
+              description: User's blockchain address
+            newCreditScore:
+              type: integer
+              description: Updated credit score
+      required:
+        - success
+
+    FraudCheckRequest:
+      type: object
+      properties:
+        creditData:
+          type: object
+          properties:
+            userAddress:
+              type: string
+            transactionHistory:
+              type: array
+              items:
+                type: string
+            creditScore:
+              type: integer
+            accountAge:
+              type: integer
+              description: Age of financial accounts in days
+      required:
+        - creditData
+
+    FraudCheckResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            isFraudulent:
+              type: boolean
+              description: Whether the data appears fraudulent
+            riskLevel:
+              type: string
+              enum: [Low, Medium, High]
+              description: Risk level assessment
+      required:
+        - success
+
+    PaymentRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          format: float
+          minimum: 0.01
+          description: Transaction amount
+        currency:
+          type: string
+          enum: [USD, EUR, KES, NGN, GHS]
+          description: Currency code
+        paymentMethod:
+          type: string
+          enum: [card, bank_transfer, mobile_money, crypto]
+          description: Payment method
+        description:
+          type: string
+          description: Transaction description
+      required:
+        - amount
+        - currency
+        - paymentMethod
+
+    PaymentResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        transactionId:
+          type: string
+          description: Unique transaction identifier
+        status:
+          type: string
+          enum: [completed, pending, failed]
+          description: Transaction status
+        processorResponse:
+          type: object
+          description: Response from payment processor
+      required:
+        - success
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Error message
+      required:
+        - success
+        - message
+

@@ -1,5 +1,8 @@
 import apiConfig from "@/config/api.config";
 
+// Import getApiUrl function from apiConfig
+const { getApiUrl } = apiConfig;
+
 export const creditDataService = {
   getCreditData: async ({
     source = "all",
@@ -98,7 +101,7 @@ export const creditDataService = {
     }
   },
 
-  uploadData: async (file, source) => {
+  uploadData: async (file, source, onProgress) => {
     console.log("Starting upload:", { fileName: file.name, source });
     try {
       const formData = new FormData();
@@ -109,24 +112,58 @@ export const creditDataService = {
       delete headers["Content-Type"]; // Let browser set correct content type
 
       console.log("Making upload request...");
-      const response = await fetch(getApiUrl("/credit-data/upload"), {
-        method: "POST",
-        headers,
-        body: formData,
+      
+      // Use XMLHttpRequest for progress tracking
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        
+        // Track upload progress
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable && onProgress) {
+            const percentComplete = (event.loaded / event.total) * 100;
+            onProgress(percentComplete);
+          }
+        });
+        
+        // Handle response
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const data = JSON.parse(xhr.responseText);
+              console.log("Upload response data:", data);
+              resolve(data);
+            } catch (e) {
+              console.error("Error parsing response:", e);
+              reject(new Error("Invalid response format"));
+            }
+          } else {
+            try {
+              const errorData = JSON.parse(xhr.responseText);
+              const error = new Error(errorData.error || "Upload failed");
+              error.status = xhr.status;
+              error.details = errorData.details || [];
+              reject(error);
+            } catch (e) {
+              reject(new Error(`Upload failed with status ${xhr.status}`));
+            }
+          }
+        };
+        
+        // Handle network errors
+        xhr.onerror = function() {
+          reject(new Error("Network error during upload"));
+        };
+        
+        // Open and send the request
+        xhr.open('POST', getApiUrl("/credit-data/upload"), true);
+        
+        // Set headers
+        Object.keys(headers).forEach(key => {
+          xhr.setRequestHeader(key, headers[key]);
+        });
+        
+        xhr.send(formData);
       });
-
-      console.log("Upload response status:", response.status);
-      const data = await response.json();
-      console.log("Upload response data:", data);
-
-      if (!response.ok) {
-        const error = new Error(data.error || "Upload failed");
-        error.status = response.status;
-        error.details = data.details || [];
-        throw error;
-      }
-
-      return data;
     } catch (error) {
       console.error("Upload error:", error);
       error.status = error.status || 500;
@@ -262,7 +299,7 @@ export const creditDataService = {
     });
   },
 
-  uploadAndTrack: async (file, source, onStatusChange) => {
+  uploadAndTrack: async (file, source, onStatusChange, onProgress) => {
     console.log("Starting upload and track process");
     try {
       if (!file || !source) {
@@ -270,7 +307,7 @@ export const creditDataService = {
       }
 
       console.log("Uploading file...");
-      const uploadResult = await creditDataService.uploadData(file, source);
+      const uploadResult = await creditDataService.uploadData(file, source, onProgress);
       console.log("Upload successful:", uploadResult);
 
       console.log("Starting status tracking...");

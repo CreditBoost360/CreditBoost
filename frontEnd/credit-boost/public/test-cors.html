@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CORS Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .test-section {
+      margin-bottom: 30px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    button {
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>CORS Test Tool</h1>
+  <p>This page helps test CORS configuration between frontend and backend.</p>
+  
+  <div class="test-section">
+    <h2>1. Test GET Request</h2>
+    <button onclick="testGetRequest()">Test GET</button>
+    <div id="get-result"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>2. Test POST Request</h2>
+    <button onclick="testPostRequest()">Test POST</button>
+    <div id="post-result"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>3. Test Authentication</h2>
+    <button onclick="testAuthRequest()">Test Auth</button>
+    <div id="auth-result"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>4. Test Custom Headers</h2>
+    <button onclick="testCustomHeaders()">Test Headers</button>
+    <div id="headers-result"></div>
+  </div>
+
+  <script>
+    // API URL
+    const API_URL = 'http://localhost:3000';
+    
+    // Helper to display results
+    function displayResult(elementId, success, data) {
+      const element = document.getElementById(elementId);
+      element.innerHTML = `
+        <p class="${success ? 'success' : 'error'}">${success ? 'Success!' : 'Error!'}</p>
+        <pre>${JSON.stringify(data, null, 2)}</pre>
+      `;
+    }
+    
+    // Test GET request
+    async function testGetRequest() {
+      try {
+        const response = await fetch(`${API_URL}/api/test-cors`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        displayResult('get-result', true, data);
+      } catch (error) {
+        displayResult('get-result', false, { error: error.message });
+      }
+    }
+    
+    // Test POST request
+    async function testPostRequest() {
+      try {
+        const response = await fetch(`${API_URL}/api/test-cors/preflight`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ test: 'data', timestamp: new Date().toISOString() })
+        });
+        
+        const data = await response.json();
+        displayResult('post-result', true, data);
+      } catch (error) {
+        displayResult('post-result', false, { error: error.message });
+      }
+    }
+    
+    // Test authentication request
+    async function testAuthRequest() {
+      try {
+        const response = await fetch(`${API_URL}/api/auth/test`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer test-token'
+          },
+          credentials: 'include'
+        });
+        
+        const data = await response.json();
+        displayResult('auth-result', true, data);
+      } catch (error) {
+        displayResult('auth-result', false, { error: error.message });
+      }
+    }
+    
+    // Test custom headers
+    async function testCustomHeaders() {
+      try {
+        const response = await fetch(`${API_URL}/api/test-cors`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'X-Custom-Header': 'test-value',
+            'X-Device-Fingerprint': 'test-fingerprint',
+            'X-Nonce': 'test-nonce',
+            'X-Timestamp': Date.now().toString()
+          }
+        });
+        
+        const data = await response.json();
+        displayResult('headers-result', true, data);
+      } catch (error) {
+        displayResult('headers-result', false, { error: error.message });
+      }
+    }
+  </script>
+</body>
+</html>

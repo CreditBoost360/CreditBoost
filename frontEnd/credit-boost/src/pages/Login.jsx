@@ -1,155 +1,283 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { AppContext } from '../context/AppContext';
-import { authenticateWithGoogle } from '../api/socialAuth';
-import AuthLayout from './Layouts/AuthLayout';
-import { unifiedAuthService } from '@/services/unifiedAuth.service';
-import { useToast } from '@/components/ui/use-toast';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
+import LanguageSelector from '@/components/LanguageSelector';
+import { authService } from '@/services/auth.service';
 
-const LoginPage = () => {
-    const { toast } = useToast();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
-    const [authProvider, setAuthProvider] = useState('jwt'); // Default to JWT
-    
-    const { setIsAuthenticated, setUser } = useContext(AppContext);
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        const checkAuth = async () => {
-            const isAuth = await unifiedAuthService.isAuthenticated();
-            if (isAuth) {
-                navigate('/dashboard', { replace: true });
-            }
-            setIsLoading(false);
-        };
-        
-        checkAuth();
-    }, [navigate]);
-    
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        setError('');
-        
-        try {
-            const response = await unifiedAuthService.login(email, password, authProvider);
-            console.log('Login response:', response);
-            
-            setIsAuthenticated(true);
-            setUser(response.user);
-            
-            toast({ title: "Success", description: "Login successful" });
-            navigate('/dashboard', { replace: true }); 
-        } catch (err) {
-            console.error('Login error:', err);
-            setError('Invalid email or password. Please try again.');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const toggleAuthProvider = () => {
-        setAuthProvider(prev => prev === 'jwt' ? 'supabase' : 'jwt');
-        toast({ description: `Switched to ${authProvider === 'jwt' ? 'Supabase' : 'JWT'} authentication` });
-    };
-
-    if (isLoading) {
-        return null;
+const Login = () => {
+  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [preferredLanguage, setPreferredLanguage] = useState('en');
+  const [loginMethod, setLoginMethod] = useState('email');
+  const navigate = useNavigate();
+  
+  // Load preferred language from localStorage
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage) {
+      setPreferredLanguage(savedLanguage);
+    } else {
+      // Try to detect browser language
+      const browserLang = navigator.language.split('-')[0];
+      if (browserLang) {
+        setPreferredLanguage(browserLang);
+        localStorage.setItem('preferredLanguage', browserLang);
+      }
     }
-
-    return (
-        <AuthLayout 
-            title="Welcome back"
-            subtitle="Sign in to continue to your account"
-        >
-            <button
-                onClick={authenticateWithGoogle}
-                className="w-full flex items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-700 shadow-sm hover:bg-gray-50 mb-6"
-            >
-                <img src="google.svg" className="w-5 h-5" alt="Google logo" />
-                <span>Continue with Google</span>
-            </button>
+  }, []);
+  
+  // Handle language change
+  const handleLanguageChange = (langCode) => {
+    setPreferredLanguage(langCode);
+    localStorage.setItem('preferredLanguage', langCode);
+  };
+  
+  // Handle login form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      console.log('Login form submitted');
+      
+      // Prepare login data based on selected method
+      const loginData = {
+        password,
+        language: preferredLanguage
+      };
+      
+      if (loginMethod === 'email') {
+        loginData.email = email;
+        console.log('Logging in with email:', email);
+      } else {
+        loginData.phoneNumber = phoneNumber;
+        console.log('Logging in with phone number:', phoneNumber);
+      }
+      
+      // Call the auth service to login
+      console.log('Calling auth service login...');
+      const response = await authService.login(loginData);
+      console.log('Login successful, response:', response);
+      
+      // Store user data and token
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('preferredLanguage', preferredLanguage);
+      
+      console.log('Authentication data stored in localStorage');
+      console.log('Current localStorage state:', { 
+        isAuthenticated: localStorage.getItem('isAuthenticated'),
+        hasToken: !!localStorage.getItem('token'),
+        hasUser: !!localStorage.getItem('user')
+      });
+      
+      // Redirect to dashboard
+      console.log('Redirecting to dashboard...');
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Translations for login page
+  const translations = {
+    en: {
+      title: 'Login',
+      description: 'Enter your credentials to access your account',
+      emailLabel: 'Email',
+      emailPlaceholder: 'Enter your email',
+      phoneLabel: 'Phone Number',
+      phonePlaceholder: 'Enter your phone number',
+      passwordLabel: 'Password',
+      passwordPlaceholder: 'Enter your password',
+      forgotPassword: 'Forgot password?',
+      loginButton: 'Login',
+      noAccount: 'Don\'t have an account?',
+      signUp: 'Sign up',
+      languageSelector: 'Select Language',
+      emailTab: 'Email',
+      phoneTab: 'Phone',
+      showPassword: 'Show password',
+      hidePassword: 'Hide password'
+    },
+    es: {
+      title: 'Iniciar sesión',
+      description: 'Ingrese sus credenciales para acceder a su cuenta',
+      emailLabel: 'Correo electrónico',
+      emailPlaceholder: 'Ingrese su correo electrónico',
+      phoneLabel: 'Número de teléfono',
+      phonePlaceholder: 'Ingrese su número de teléfono',
+      passwordLabel: 'Contraseña',
+      passwordPlaceholder: 'Ingrese su contraseña',
+      forgotPassword: '¿Olvidó su contraseña?',
+      loginButton: 'Iniciar sesión',
+      noAccount: '¿No tiene una cuenta?',
+      signUp: 'Registrarse',
+      languageSelector: 'Seleccionar idioma',
+      emailTab: 'Correo',
+      phoneTab: 'Teléfono',
+      showPassword: 'Mostrar contraseña',
+      hidePassword: 'Ocultar contraseña'
+    },
+    fr: {
+      title: 'Connexion',
+      description: 'Entrez vos identifiants pour accéder à votre compte',
+      emailLabel: 'Email',
+      emailPlaceholder: 'Entrez votre email',
+      phoneLabel: 'Numéro de téléphone',
+      phonePlaceholder: 'Entrez votre numéro de téléphone',
+      passwordLabel: 'Mot de passe',
+      passwordPlaceholder: 'Entrez votre mot de passe',
+      forgotPassword: 'Mot de passe oublié?',
+      loginButton: 'Se connecter',
+      noAccount: 'Vous n\'avez pas de compte?',
+      signUp: 'S\'inscrire',
+      languageSelector: 'Sélectionner la langue',
+      emailTab: 'Email',
+      phoneTab: 'Téléphone',
+      showPassword: 'Afficher le mot de passe',
+      hidePassword: 'Masquer le mot de passe'
+    }
+  };
+  
+  // Get translations for current language (fallback to English)
+  const t = translations[preferredLanguage] || translations.en;
+  
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div className="flex justify-end">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">{t.languageSelector}:</span>
+            <LanguageSelector 
+              initialLanguage={preferredLanguage}
+              onLanguageChange={handleLanguageChange}
+            />
+          </div>
+        </div>
+        
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-primary">CreditBoost</h1>
+          <p className="mt-2 text-gray-600">Improve your financial health</p>
+        </div>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>{t.title}</CardTitle>
+            <CardDescription>{t.description}</CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
+              {error && (
+                <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
+                  {error}
+                </div>
+              )}
+              
+              <Tabs 
+                defaultValue="email" 
+                className="w-full" 
+                onValueChange={(value) => setLoginMethod(value)}
+              >
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="email">{t.emailTab}</TabsTrigger>
+                  <TabsTrigger value="phone">{t.phoneTab}</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="email" className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">{t.emailLabel}</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder={t.emailPlaceholder}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required={loginMethod === 'email'}
+                    />
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="phone" className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber">{t.phoneLabel}</Label>
+                    <Input
+                      id="phoneNumber"
+                      type="tel"
+                      placeholder={t.phonePlaceholder}
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      required={loginMethod === 'phone'}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">{t.passwordLabel}</Label>
+                  <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                    {t.forgotPassword}
+                  </Link>
+                </div>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder={t.passwordPlaceholder}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? t.hidePassword : t.showPassword}
+                  </button>
+                </div>
+              </div>
+            </CardContent>
             
-            <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                    <span className="bg-white dark:bg-gray-900 px-2 text-gray-500">Or continue with</span>
-                </div>
-            </div>
-
-            {error && (
-                <div className="mb-4 p-3 text-sm text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                    {error}
-                </div>
-            )}
-
-            <form onSubmit={handleLogin} className="space-y-6">
-                <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Email
-                    </label>
-                    <input
-                        id="email"
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-sky-500 focus:ring-sky-500 dark:bg-gray-800 dark:border-gray-700"
-                    />
-                </div>
-
-                <div>
-                    <div className="flex items-center justify-between mb-1">
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Password
-                        </label>
-                        <Link to="/forgot-password" className="text-sm text-sky-600 hover:text-sky-500">
-                            Forgot password?
-                        </Link>
-                    </div>
-                    <input
-                        id="password"
-                        type="password"
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-sky-500 focus:ring-sky-500 dark:bg-gray-800 dark:border-gray-700"
-                    />
-                </div>
-
-                <div className="flex items-center">
-                    <button
-                        type="button"
-                        onClick={toggleAuthProvider}
-                        className="text-xs text-sky-600 hover:text-sky-500 ml-auto"
-                    >
-                        Using {authProvider === 'jwt' ? 'JWT' : 'Supabase'} auth
-                    </button>
-                </div>
-
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full rounded-lg bg-sky-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-600 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                    {isSubmitting ? "Signing in..." : "Sign in"}
-                </button>
-            </form>
-
-            <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-                Don't have an account?{' '}
-                <Link to="/signup" className="text-sky-600 hover:text-sky-500 font-medium">
-                    Sign up
+            <CardFooter className="flex flex-col space-y-4">
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>{t.loginButton}...</span>
+                  </div>
+                ) : (
+                  t.loginButton
+                )}
+              </Button>
+              
+              <div className="text-center text-sm">
+                {t.noAccount}{' '}
+                <Link to="/register" className="text-primary hover:underline">
+                  {t.signUp}
                 </Link>
-            </p>
-        </AuthLayout>
-    );
+              </div>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
+    </div>
+  );
 };
 
-export default LoginPage;
+export default Login;

@@ -1,217 +1,133 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Animation keyframes */
-@keyframes dash {
-  from {
-    stroke-dashoffset: 840;
-  }
-  to {
-    stroke-dashoffset: 180;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-5px); }
-  40% { transform: translateX(5px); }
-  60% { transform: translateX(-3px); }
-  80% { transform: translateX(3px); }
-}
-
-.animate-shake {
-  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-}
-
-/* Loading skeleton animation */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0.06) 25%,
-    rgba(0, 0, 0, 0.08) 37%,
-    rgba(0, 0, 0, 0.06) 63%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
-}
-
-.dark .skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.06) 25%,
-    rgba(255, 255, 255, 0.08) 37%,
-    rgba(255, 255, 255, 0.06) 63%
-  );
-  background-size: 200% 100%;
-}
-
-/* Color scheme transitions */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-  }
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color-scheme: light;
-  }
-}
-
-/* Smooth theme transitions */
-* {
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-/* Remove transitions if user prefers reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
-  }
-}
-
+ 
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+ 
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+ 
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+ 
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+ 
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.5% 48%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
   body {
     @apply bg-background text-foreground;
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  /* Mobile Input Optimizations */
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="number"],
-  input[type="tel"],
-  input[type="search"],
-  textarea,
-  select {
-    @apply w-full rounded-lg border px-3 py-2;
-    font-size: 16px; /* Prevents iOS zoom */
-    -webkit-appearance: none;
-    appearance: none;
-    
-    &:focus {
-      @apply outline-none ring-2 ring-primary ring-offset-2;
-    }
-  }
-
-  /* Fix for iOS input shadows */
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="search"] {
-    -webkit-appearance: none;
-  }
-  
-  /* Improve touch targets on mobile */
-  @media (max-width: 768px) {
-    button, 
-    a, 
-    input, 
-    select, 
-    textarea {
-      @apply min-h-[44px] min-w-[44px];
-    }
-    
-    /* Add spacing between touch targets */
-    button:not(:last-child), 
-    a:not(:last-child) {
-      @apply mb-2;
-    }
-  }
-  
-  /* Remove touch delay on supported devices */
-  a, 
-  button {
-    touch-action: manipulation;
-  }
-
-  /* Momentum scrolling for iOS */
-  .momentum-scroll {
-    -webkit-overflow-scrolling: touch;
-    overflow-y: scroll;
-  }
-
-  /* Better touch targets */
-  .interactive-element {
-    cursor: pointer;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  /* Prevent text selection while swiping */
-  .no-select {
-    -webkit-user-select: none;
-    user-select: none;
-  }
-
-  /* Touch feedback */
-  .touch-feedback {
-    transition: transform 0.2s ease;
-    
-    &:active {
-      transform: scale(0.98);
-    }
-  }
-
-  /* Scrolling optimizations */
-  .scroll-view {
-    contain: content;
-    will-change: transform;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
-    scroll-behavior: smooth;
-    backface-visibility: hidden;
-    transform: translateZ(0);
-    
-    @supports (content-visibility: auto) {
-      content-visibility: auto;
-      contain-intrinsic-size: 0 500px;
-    }
-  }
-
-  /* Virtual list optimization */
-  .virtual-list-item {
-    contain: layout style;
-    will-change: transform;
-    transform: translateZ(0);
-  }
-
-  /* Hardware acceleration for animations */
-  .hardware-accelerated {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    perspective: 1000px;
   }
 }
 
-/* Remove focus outlines for mouse users, keep for keyboard */
-:focus:not(:focus-visible) {
-  outline: none;
+/* Custom styles for the credit score gauge */
+.gauge-segment {
+  transform-origin: center bottom;
 }
 
-/* Keep focus styles for keyboard users */
-:focus-visible {
-  @apply outline-2 outline-offset-2 outline-primary;
+/* Custom styles for notifications */
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  background-color: #ef4444;
+  color: white;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+
+/* Custom animation for the credit score gauge */
+@keyframes gaugeAnimation {
+  0% { transform: rotate(-90deg); }
+  100% { transform: rotate(var(--rotation-angle)); }
+}
+
+.gauge-needle {
+  animation: gaugeAnimation 1.5s ease-out forwards;
+}
+
+/* Custom styles for profile completion */
+.completion-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.completion-item-icon {
+  margin-right: 0.5rem;
+}
+
+.completion-item-text {
+  font-size: 0.875rem;
+}
+
+.completion-item-completed .completion-item-text {
+  text-decoration: line-through;
+  color: #6b7280;
+}
+
+/* Dark mode transition */
+.dark-mode-transition {
+  transition: background-color 0.3s ease, color 0.3s ease;
 }

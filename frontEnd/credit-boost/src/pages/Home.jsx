@@ -1,22 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { CreditCard, GraduationCap, Star, ChevronRight, Sparkles, Trophy, Target, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AuthenticatedLayout from './Layouts/AuthenticatedLayout';
 import PassportCard from '@/components/CreditPassport/PassportCard';
+import { AppContext } from '@/context/AppContext';
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = useContext(AppContext);
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
-    // Mock user data - in a real app, this would come from your auth context or API
-    setUserData({
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com",
-      updatedAt: new Date().toISOString()
-    });
-  }, []);
+    // Use actual user data from context if available
+    if (user) {
+      setUserData({
+        firstName: user.firstName || user.username || 'User',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        updatedAt: new Date().toISOString()
+      });
+    } else {
+      // Fallback to mock data if no user in context
+      setUserData({
+        firstName: "User",
+        lastName: "",
+        email: "user@example.com",
+        updatedAt: new Date().toISOString()
+      });
+    }
+  }, [user]);
 
   const stats = [
     {
@@ -62,6 +74,15 @@ const Home = () => {
       buttonText: 'Analyze Score'
     },
     {
+      name: 'Financial Dashboard',
+      icon: <CreditCard className="h-6 w-6" />,
+      link: '/financial-dashboard',
+      description: 'Comprehensive analysis of your financial data and personalized recommendations.',
+      features: ['Data-driven insights', 'Credit simulation', 'Personalized recommendations'],
+      gradient: "from-green-500 to-green-400",
+      buttonText: 'View Dashboard'
+    },
+    {
       name: 'Universal Credit Passport',
       icon: <Shield className="h-6 w-6" />,
       link: '/credit-passport',
@@ -84,6 +105,12 @@ const Home = () => {
   return (
     <AuthenticatedLayout>
       <div className="flex flex-col gap-8">
+        {/* Welcome Message */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-border">
+          <h1 className="text-2xl font-bold mb-2">Welcome back, {userData?.firstName || 'User'}!</h1>
+          <p className="text-muted-foreground">Here's your financial dashboard overview.</p>
+        </div>
+        
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {stats.map((stat, index) => (

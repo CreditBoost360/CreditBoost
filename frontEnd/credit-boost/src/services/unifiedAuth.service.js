@@ -6,6 +6,10 @@ import { toast } from '@/components/ui/use-toast';
 // Storage keys
 const AUTH_PROVIDER_KEY = 'auth_provider';
 const SUPABASE_SESSION_KEY = 'supabase_session';
+const USER_DATA_KEY = 'user_data';
+const AUTH_ATTEMPTS_KEY = 'auth_attempts';
+const MAX_AUTH_ATTEMPTS = 5;
+const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 /**
  * Unified Authentication Service
@@ -21,8 +25,26 @@ export const unifiedAuthService = {
    * @param {string} password - User password
    * @param {string} provider - Authentication provider ('jwt' or 'supabase')
    */
-  login: async (email, password, provider = 'jwt') => {
+  login: async (loginData, provider = 'jwt') => {
+    const { email, password, phoneNumber } = loginData;
     try {
+      // Check for account lockout
+      const authAttempts = JSON.parse(localStorage.getItem(AUTH_ATTEMPTS_KEY) || '{"count": 0}');
+      
+      if (authAttempts.count >= MAX_AUTH_ATTEMPTS && authAttempts.timestamp) {
+        const lockoutTime = new Date(authAttempts.timestamp);
+        const currentTime = new Date();
+        const timeDiff = currentTime - lockoutTime;
+        
+        if (timeDiff < LOCKOUT_DURATION) {
+          const minutesLeft = Math.ceil((LOCKOUT_DURATION - timeDiff) / 60000);
+          throw new Error(`Too many failed login attempts. Please try again in ${minutesLeft} minutes.`);
+        } else {
+          // Reset attempts after lockout period
+          localStorage.setItem(AUTH_ATTEMPTS_KEY, JSON.stringify({ count: 0 }));
+        }
+      }
+      
       let authResult;
       
       if (provider === 'supabase') {
@@ -32,26 +54,65 @@ export const unifiedAuthService = {
           password
         });
         
-        if (error) throw error;
+        if (error) {
+          // Increment failed attempts
+          localStorage.setItem(AUTH_ATTEMPTS_KEY, JSON.stringify({
+            count: authAttempts.count + 1,
+            timestamp: new Date().toISOString()
+          }));
+          throw error;
+        }
+        
+        // Reset auth attempts on successful login
+        localStorage.setItem(AUTH_ATTEMPTS_KEY, JSON.stringify({ count: 0 }));
         
         // Store Supabase session
         localStorage.setItem(SUPABASE_SESSION_KEY, JSON.stringify(data.session));
         localStorage.setItem(AUTH_PROVIDER_KEY, 'supabase');
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify(data.user));
         
         authResult = {
           user: data.user,
           token: data.session.access_token
         };
       } else {
-        // JWT authentication
-        authResult = await jwtAuthService.login(email, password);
-        localStorage.setItem(AUTH_PROVIDER_KEY, 'jwt');
+        try {
+          // JWT authentication
+          authResult = await jwtAuthService.login(loginData);
+          
+          // Reset auth attempts on successful login
+          localStorage.setItem(AUTH_ATTEMPTS_KEY, JSON.stringify({ count: 0 }));
+          localStorage.setItem(AUTH_PROVIDER_KEY, 'jwt');
+          localStorage.setItem(USER_DATA_KEY, JSON.stringify(authResult.user));
+        } catch (jwtError) {
+          // Increment failed attempts
+          localStorage.setItem(AUTH_ATTEMPTS_KEY, JSON.stringify({
+            count: authAttempts.count + 1,
+            timestamp: new Date().toISOString()
+          }));
+          
+          // If JWT auth fails, try Supabase as fallback
+          if (provider === 'jwt') {
+            try {
+              console.log('JWT auth failed, trying Supabase as fallback');
+              return await unifiedAuthService.login(loginData, 'supabase');
+            } catch (supabaseError) {
+              throw jwtError; // If both fail, throw the original error
+            }
+          } else {
+            throw jwtError;
+          }
+        }
       }
       
       return authResult;
     } catch (error) {
       console.error(`Login error (${provider}):`, error);
-      toast({ title: "Error", description: `Login failed: ${error.message || 'Unknown error'}`, variant: "destructive" });
+      toast({ 
+        title: "Login Failed", 
+        description: error.message || 'Authentication failed. Please check your credentials and try again.',
+        variant: "destructive" 
+      });
       throw error;
     }
   },
@@ -245,15 +306,80 @@ export const unifiedAuthService = {
    */
   isAuthenticated: async () => {
     try {
+      console.log('unifiedAuthService.isAuthenticated called');
+      
+      // Check direct localStorage flags first
+      const token = localStorage.getItem('token');
+      const isAuthFlag = localStorage.getItem('isAuthenticated');
+      
+      if (token && isAuthFlag === 'true') {
+        console.log('Found direct authentication flags in localStorage');
+        return true;
+      }
+      
       const provider = localStorage.getItem(AUTH_PROVIDER_KEY);
+      console.log('Auth provider from localStorage:', provider);
+      
+      // Then check user data
+      const userData = localStorage.getItem(USER_DATA_KEY);
+      if (!userData) {
+        console.log('No user data found in localStorage');
+        return false;
+      }
       
       if (provider === 'supabase') {
-        // Check Supabase authentication
-        const { data } = await supabase.auth.getSession();
-        return !!data.session;
+        try {
+          // Check Supabase authentication
+          const { data, error } = await supabase.auth.getSession();
+          
+          if (error || !data.session) {
+            // Clear invalid session data
+            localStorage.removeItem(SUPABASE_SESSION_KEY);
+            localStorage.removeItem(USER_DATA_KEY);
+            return false;
+          }
+          
+          // Update session data if needed
+          if (data.session) {
+            localStorage.setItem(SUPABASE_SESSION_KEY, JSON.stringify(data.session));
+          }
+          
+          return true;
+        } catch (e) {
+          console.error('Supabase auth check error:', e);
+          // Fallback to JWT if Supabase fails
+          try {
+            return jwtAuthService.isAuthenticated();
+          } catch {
+            return false;
+          }
+        }
       } else {
-        // Default to JWT authentication check
-        return jwtAuthService.isAuthenticated();
+        try {
+          // Default to JWT authentication check
+          const isJwtAuth = await jwtAuthService.isAuthenticated();
+          
+          if (!isJwtAuth) {
+            // If JWT auth fails, try Supabase as fallback
+            try {
+              const { data } = await supabase.auth.getSession();
+              if (data.session) {
+                // Switch to Supabase auth if JWT fails but Supabase session exists
+                localStorage.setItem(AUTH_PROVIDER_KEY, 'supabase');
+                localStorage.setItem(SUPABASE_SESSION_KEY, JSON.stringify(data.session));
+                return true;
+              }
+            } catch {
+              // Both auth methods failed
+              return false;
+            }
+          }
+          
+          return isJwtAuth;
+        } catch (e) {
+          console.error('JWT auth check error:', e);
+          return false;
+        }
       }
     } catch (error) {
       console.error('Authentication check error:', error);

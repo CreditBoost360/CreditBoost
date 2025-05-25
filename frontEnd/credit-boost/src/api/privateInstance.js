@@ -2,7 +2,7 @@ import axios from "axios";
 
 const baseURL = import.meta.env.VITE_PRODUCTION === 'true'
   ? 'https://credvault.co.ke/api'
-  : import.meta.env.VITE_DEV_URL || '/api';
+  : import.meta.env.VITE_DEV_URL || 'http://localhost:3000';
 
 // Secure random nonce generator using browser's crypto API
 const generateNonce = () => {

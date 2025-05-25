@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import AuthenticatedLayout from './Layouts/AuthenticatedLayout';
 import { useNavigate } from 'react-router-dom';
+import CreditScoreOverview from '@/components/CreditScoreOverview';
 
 const CreditScore = () => {
     const [selectedBreakdown, setSelectedBreakdown] = useState('Credit utilization');
@@ -42,7 +43,7 @@ const CreditScore = () => {
 
     return (
         <AuthenticatedLayout>
-            <div className="container flex justify-between items-center mb-">
+            <div className="container flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Credit Score Overview</h1>
                 <Button 
                     onClick={() => navigate('/credit-score/upload-data')}
@@ -52,12 +53,28 @@ const CreditScore = () => {
                     Update Data
                 </Button>
             </div>
-            <div className="grid gap-6 p-6">
+            
+            {/* Enhanced Credit Score Overview */}
+            <div className="px-6 mb-6">
+                <CreditScoreOverview 
+                    score={710} 
+                    previousScore={695}
+                    factors={[
+                        { name: 'Payment History', status: 'excellent', percentage: 95, impact: 'high' },
+                        { name: 'Credit Utilization', status: 'good', percentage: 75, impact: 'high' },
+                        { name: 'Credit Age', status: 'fair', percentage: 60, impact: 'medium' },
+                        { name: 'Account Mix', status: 'good', percentage: 80, impact: 'low' },
+                        { name: 'Recent Inquiries', status: 'excellent', percentage: 90, impact: 'low' }
+                    ]}
+                />
+            </div>
+            
+            <div className="grid gap-6 px-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Real-time Graph Card */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Credit Score Real-Time Graph</CardTitle>
+                            <CardTitle>Credit Score History</CardTitle>
                             <p className="text-sm text-muted-foreground">
                                 Showing credit score progression over the last 6 months
                             </p>
@@ -68,8 +85,8 @@ const CreditScore = () => {
                                     <AreaChart data={timelineData}>
                                         <defs>
                                             <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#FF5630" stopOpacity={0.3} />
-                                                <stop offset="100%" stopColor="#FF5630" stopOpacity={0.1} />
+                                                <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                                <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.1} />
                                             </linearGradient>
                                         </defs>
                                         <CartesianGrid strokeDasharray="3 3" />
@@ -79,7 +96,7 @@ const CreditScore = () => {
                                         <Area
                                             type="monotone"
                                             dataKey="score"
-                                            stroke="#FF5630"
+                                            stroke="#3b82f6"
                                             fill="url(#scoreGradient)"
                                         />
                                     </AreaChart>
@@ -141,7 +158,7 @@ const CreditScore = () => {
                                 </ResponsiveContainer>
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="text-center">
-                                        <div className="text-4xl font-bold">186</div>
+                                        <div className="text-4xl font-bold">710</div>
                                         <div className="text-sm text-muted-foreground">Score</div>
                                     </div>
                                 </div>

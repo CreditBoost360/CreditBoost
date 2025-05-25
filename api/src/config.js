@@ -31,9 +31,9 @@ for (const envVar of requiredEnvVars) {
 
 // Export configuration
 export const config = {
-  port: process.env.PORT || 3000,
+  port: 3000, // Hardcoded to 3000 to ensure consistency
   nodeEnv: process.env.NODE_ENV || 'development',
-  allowedOrigins: (process.env.ALLOWED_ORIGINS || '').split(','),
+  allowedOrigins: (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:3000,https://credvault.co.ke').split(','),
   encryption: {
     key: process.env.ENCRYPTION_KEY
   },

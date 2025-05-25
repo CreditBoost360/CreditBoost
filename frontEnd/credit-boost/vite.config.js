@@ -36,27 +36,16 @@ export default defineConfig({
       '/api': {
         target: process.env.VITE_API_URL || 'http://localhost:3000',
         changeOrigin: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false,
       }
     },
+    cors: true,
     headers: {
-      'X-Frame-Options': 'DENY',
+      'X-Frame-Options': 'SAMEORIGIN',
       'X-Content-Type-Options': 'nosniff',
       'X-XSS-Protection': '1; mode=block',
-      'Content-Security-Policy': `
-        default-src 'self';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval';
-        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-        img-src 'self' data: https:;
-        font-src 'self' https://fonts.gstatic.com;
-        connect-src 'self' https://credvault.co.ke http://localhost:3000;
-        object-src 'none';
-        frame-ancestors 'none';
-        base-uri 'self';
-        form-action 'self';
-        block-all-mixed-content;
-        upgrade-insecure-requests;
-      `.replace(/\s+/g, ' ').trim(),
+      // Permissive CSP for development
+      'Content-Security-Policy': "default-src * 'self' data: blob: 'unsafe-inline' 'unsafe-eval' ws: wss:; connect-src * 'self' ws: wss:;",
       'Referrer-Policy': 'strict-origin-when-cross-origin',
       'Permissions-Policy': 'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()',
       'Cross-Origin-Opener-Policy': 'same-origin',
